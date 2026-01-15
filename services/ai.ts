@@ -12,7 +12,7 @@ export async function generateDailyQuote() {
     Genereer één korte, krachtige quote die ondernemers motiveert om slimmer te werken en tijd te besparen.
     Focus op: tijdswinst, efficiëntie, passie voor ondernemen en het loslaten van administratieve lasten.
     Taal: Nederlands (met een professionele maar warme toon).
-    Lengte: Maximaal 15-20 words.
+    Lengte: Maximaal 15-20 woorden.
     Geen hashtags, geen emoji's in de tekst zelf.
   `;
 
@@ -49,17 +49,17 @@ export async function generateKoalaResponse(
       intent: { type: Type.STRING, description: "De intentie van de klant (bijv. vraag, klacht)." },
       emotion: { type: Type.STRING, description: "De emotie van de klant (bijv. tevreden, gefrustreerd)." },
       urgency: { type: Type.STRING, description: "Urgentie-niveau (bijv. laag, medium, hoog)." },
-      variantA: { type: Type.STRING, description: "Direct, professioneel en helder antwoord." },
-      variantB: { type: Type.STRING, description: "Menselijker, warmer en creatiever antwoord." }
+      variantA: { type: Type.STRING, description: "Direct en professioneel antwoord volgens de 7 stappen." },
+      variantB: { type: Type.STRING, description: "Warmer en persoonlijker antwoord volgens de 7 stappen." }
     },
     required: ["intent", "emotion", "urgency", "variantA", "variantB"]
   };
 
   const lengthPromptMap: Record<string, string> = {
-    [LengthType.ULTRA_SHORT]: "Beperk je antwoord tot EXACT 1 of 2 zinnen. Niet meer.",
-    [LengthType.SHORT]: "Schrijf EXACT 3 tot 5 zinnen.",
-    [LengthType.NORMAL]: "Schrijf een antwoord van EXACT 6 tot 10 zinnen.",
-    [LengthType.EXTENDED]: "Schrijf een uitgebreid antwoord van MINIMAAL 10 zinnen."
+    [LengthType.ULTRA_SHORT]: "Houd het zeer beknopt, maar volg alle 7 stappen kort.",
+    [LengthType.SHORT]: "Schrijf ongeveer 3 tot 5 zinnen in totaal, verdeeld over de 7 stappen.",
+    [LengthType.NORMAL]: "Schrijf een gebalanceerd antwoord van 6 tot 10 zinnen.",
+    [LengthType.EXTENDED]: "Schrijf een uitgebreid en zeer gedetailleerd antwoord."
   };
 
   const specificLengthInstruction = lengthPromptMap[length] || "";
@@ -75,27 +75,29 @@ export async function generateKoalaResponse(
     INPUT DETAILS (Trefwoorden/zinnen van de gebruiker):
     "${keywords}"
 
-    STRIKTE REGELS VOOR HET VERWERKEN VAN DETAILS:
-    1. Neem details NOOIT letterlijk over als ze grammaticaal fout of onvolledig zijn.
-    2. Corrigeer hoofdletters en interpunctie automatisch.
-    3. Zet losse woorden of trefwoorden om naar volledige, logische en professionele zinnen.
-    4. Leid context af van de details en verbind deze op een natuurlijke manier met het klantbericht.
-    5. Start NOOIT een zin met een detail dat met een kleine letter is geschreven.
-    6. Verwerk details INHOUDELIJK; ze moeten vloeien in de tekst, niet als een lijstje overgenomen worden.
+    STRIKTE STANDAARDOPBOUW VOOR ELK ANTWOORD (7 STAPPEN):
+    1) Aanspreking: Warm, professioneel, klantgericht (bv. Beste [naam], Dag [naam]).
+    2) Bedanking + erkenning van de vraag: Toont respect en klantgerichtheid.
+    3) Korte samenvatting van hun vraag/probleem: Laat zien dat je het goed begrepen hebt.
+    4) Antwoord / oplossing / status: Duidelijk, concreet, zonder ruis. Gebruik bullets als er meerdere punten zijn.
+    5) Actie die jij neemt + actie die zij moeten nemen: Wees zeer duidelijk over wat er nu gebeurt.
+    6) Afsluitende geruststelling / extra hulp: Toont klantvriendelijkheid en verlaagt frustratie.
+    7) Professionele groet + bedrijfsnaam:
+       Met vriendelijke groeten,
+       ${fullName}
+       ${businessName}
 
-    ALGEMENE REGELS VOOR DE ANTWOORDEN:
+    STRIKTE REGELS VOOR DE ANTWOORDEN:
     - Taal: Nederlands/Vlaams.
     - Toon: Pas je strikt aan de gevraagde stijl: ${tone}.
-    - Lengte: ${specificLengthInstruction} Houd je hier strikt aan.
-    - Layout: GEBRUIK WITREGELS TUSSEN ALINEA'S voor leesbaarheid.
-    - Ondertekening: Sluit ELKE variant af met:
-      Met vriendelijke groet,
-      (ENTER)
-      ${fullName}
-      (ENTER)
-      ${businessName}
-    - Variant A: Focus op efficiëntie, directe actie en zakelijke helderheid.
-    - Variant B: Focus op relatiebeheer, empathie en een warmere persoonlijke 'touch'.
+    - Lengte: ${specificLengthInstruction}
+    - Layout: GEBRUIK WITREGELS TUSSEN ALINEA'S (stappen) voor leesbaarheid.
+    - Variant A: Focus op efficiëntie en zakelijke helderheid.
+    - Variant B: Focus op relatiebeheer en een warmere persoonlijke touch.
+
+    Details verwerking:
+    - Zet trefwoorden uit de details om naar vloeiende, grammaticaal correcte zinnen.
+    - Corrigeer fouten in de details automatisch.
     
     Belangrijk: Retourneer ENKEL het JSON object volgens het schema.
   `;

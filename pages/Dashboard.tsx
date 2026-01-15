@@ -1,7 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+// Explicitly import Variants type to resolve motion variant inference issues
+import { motion, Variants } from 'framer-motion';
 import { User, GeneratedResponse } from '../types';
 import { generateDailyQuote } from '../services/ai';
 import { KoalaIcon } from '../constants';
@@ -11,7 +11,8 @@ interface DashboardProps {
   history: GeneratedResponse[];
 }
 
-const containerVariants = {
+// Fix: Apply Variants type to containerVariants for correct staggerChildren typing
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -22,8 +23,8 @@ const containerVariants = {
   }
 };
 
-// Fix: Use a standard easing string to avoid TypeScript errors with cubic-bezier arrays in inferred variant objects
-const itemVariants = {
+// Fix: Apply Variants type to itemVariants to resolve Easing string assignment error
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
 };
@@ -133,7 +134,7 @@ const StatCard = ({ label, value, icon, color }: any) => (
       <div className={`w-16 h-16 ${color} rounded-[1.5rem] flex items-center justify-center text-3xl shadow-inner shrink-0 border border-black/5`}>{icon}</div>
       <div className="min-w-0 flex-1">
         <p className="text-[10px] font-black uppercase text-gray-400 mb-2 tracking-widest">{label}</p>
-        <p className="text-3xl md:text-4xl font-black text-[#1B4332] leading-none tracking-tighter break-words">{value}</p>
+        <p className="text-3xl md:text-4xl font-black text-[#1B4332] handleing-none tracking-tighter break-words">{value}</p>
       </div>
     </div>
   </motion.div>

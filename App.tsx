@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
-import { HashRouter, Routes, Route, Navigate, Link, useLocation, Outlet } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { HashRouter, Routes, Route, Navigate, Link, useLocation, Outlet, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, PlanType, AppState, GeneratedResponse, LengthType } from './types';
 import Landing from './pages/Landing';
@@ -91,12 +91,30 @@ const App: React.FC = () => {
 
 const RoutesWrapper = ({ state, handleLogin, handleLogout, loadAppData, setState }: any) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const initialRedirectDone = useRef(false);
   
+  // Force land op de landingspagina bij ELKE nieuwe app load (refresh) als je niet bent ingelogd
+  useEffect(() => {
+    if (!state.loading && !state.user && !initialRedirectDone.current) {
+      if (location.pathname !== '/') {
+        navigate('/', { replace: true });
+      }
+      initialRedirectDone.current = true;
+    }
+  }, [state.loading, state.user, navigate]);
+
   return (
     <Routes location={location} key={location.pathname}>
       <Route path="/" element={<Landing user={state.user} />}>
-        <Route path="login" element={<Login mode="login" onLogin={handleLogin} />} />
-        <Route path="signup" element={<Login mode="signup" onLogin={handleLogin} />} />
+        <Route path="login" element={<Login mode="login" onLogin={handleLogin} />}>
+          <Route path="terms" element={<TermsOfService />} />
+          <Route path="privacy" element={<PrivacyPolicy />} />
+        </Route>
+        <Route path="signup" element={<Login mode="signup" onLogin={handleLogin} />}>
+          <Route path="terms" element={<TermsOfService />} />
+          <Route path="privacy" element={<PrivacyPolicy />} />
+        </Route>
         <Route path="terms" element={<TermsOfService />} />
         <Route path="privacy" element={<PrivacyPolicy />} />
         <Route path="eula" element={<Eula />} />

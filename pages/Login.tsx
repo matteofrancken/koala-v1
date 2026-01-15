@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { User, PlanType } from '../types';
 import { backendService } from '../services/backend';
 import { supabase } from '../services/supabase';
@@ -12,6 +12,7 @@ interface LoginProps {
 
 const Login: React.FC<LoginProps> = ({ mode, onLogin }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -39,7 +40,6 @@ const Login: React.FC<LoginProps> = ({ mode, onLogin }) => {
       const cleanEmail = email.toLowerCase().trim();
 
       if (mode === 'signup') {
-        // Gebruik Supabase Auth voor registratie
         const { data: authData, error: authError } = await supabase.auth.signUp({
           email: cleanEmail,
           password: password,
@@ -54,7 +54,6 @@ const Login: React.FC<LoginProps> = ({ mode, onLogin }) => {
         if (authError) throw authError;
 
         if (authData.user) {
-          // Maak de user entry aan in onze database
           const newUser: User = {
             id: authData.user.id,
             email: cleanEmail,
@@ -70,16 +69,13 @@ const Login: React.FC<LoginProps> = ({ mode, onLogin }) => {
           
           await backendService.saveUser(newUser);
           
-          // Indien automatisch ingelogd na signup (afhankelijk van Supabase settings)
           if (authData.session) {
              await onLogin(newUser);
           }
           
-          // Navigeer direct naar onboarding
           navigate('/onboarding');
         }
       } else {
-        // LOGIN MODE
         const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
           email: cleanEmail,
           password: password,
@@ -109,11 +105,16 @@ const Login: React.FC<LoginProps> = ({ mode, onLogin }) => {
     }
   };
 
+  const basePath = mode === 'signup' ? '/signup' : '/login';
+  const isJuridicalOpen = location.pathname.includes('/terms') || location.pathname.includes('/privacy');
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-[#1B4332]/10 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="absolute inset-0" onClick={() => navigate('/')}></div>
+      {/* Background click handler met lagere z-index dan het formulier zelf */}
+      <div className="absolute inset-0 z-0" onClick={() => !isJuridicalOpen && navigate('/')}></div>
 
-      <div className="w-full max-w-md bg-white p-10 rounded-[3rem] shadow-[0_30px_100px_rgba(0,0,0,0.15)] border border-white/50 relative animate-in zoom-in-95 slide-in-from-bottom-10 duration-500">
+      {/* Main Login Card - Z-index verhoogd en expliciet gemaakt */}
+      <div className={`w-full max-w-md bg-white p-10 rounded-[3rem] shadow-[0_30px_100px_rgba(0,0,0,0.15)] border border-white/50 relative animate-in zoom-in-95 slide-in-from-bottom-10 duration-500 z-10 ${isJuridicalOpen ? 'opacity-20 scale-[0.98] blur-sm pointer-events-none' : ''}`}>
         <button 
           onClick={() => navigate('/')}
           className="absolute top-8 left-8 w-10 h-10 bg-[#F8F9FA] rounded-full flex items-center justify-center text-gray-400 hover:text-[#1B4332] hover:bg-gray-100 transition-all active:scale-90 group"
@@ -174,7 +175,7 @@ const Login: React.FC<LoginProps> = ({ mode, onLogin }) => {
                   />
                 </div>
                 <label htmlFor="terms" className="text-[10px] font-bold text-gray-400 uppercase leading-tight tracking-wide cursor-pointer">
-                  Ik ga akkoord met de <Link to="/terms" target="_blank" className="text-[#2D6A4F] underline">voorwaarden</Link> en het <Link to="/privacy" target="_blank" className="text-[#2D6A4F] underline">privacybeleid</Link>.
+                  Ik ga akkoord met de <Link to={`${basePath}/terms`} className="text-[#2D6A4F] underline">VOORWAARDEN</Link> en het <Link to={`${basePath}/privacy`} className="text-[#2D6A4F] underline">PRIVACYBELEID</Link>.
                 </label>
               </div>
             )}
@@ -198,6 +199,13 @@ const Login: React.FC<LoginProps> = ({ mode, onLogin }) => {
           </div>
         </div>
       </div>
+      
+      {/* Outlet for Terms/Privacy popups - rendered at higher z-index if active */}
+      {isJuridicalOpen && (
+        <div className="absolute inset-0 z-[120] flex items-center justify-center p-4">
+          <Outlet />
+        </div>
+      )}
     </div>
   );
 };

@@ -56,6 +56,7 @@ const Landing: React.FC<LandingProps> = ({ user }) => {
       </div>
 
       {/* --- CONTENT WRAPPER WITH BLUR LOGIC --- */}
+      {/* NOTE: pointer-events-none wordt hier nu alleen toegepast op de content die we bluren, niet op de hele container */}
       <div className={`relative z-10 flex flex-col transition-all duration-700 ${isOverlayPage ? 'blur-md scale-[0.98] opacity-60 pointer-events-none' : 'animate-in fade-in duration-500'}`}>
         
         {/* --- NAVIGATION --- */}
@@ -137,7 +138,7 @@ const Landing: React.FC<LandingProps> = ({ user }) => {
         {/* --- CORE FEATURES SECTION --- */}
         <section className="w-full max-w-[1400px] mx-auto px-6 md:px-12 lg:px-20 py-20">
           <div className="mb-16 text-center">
-            <h3 className="text-4xl md:text-5xl font-black text-[#1B4332] tracking-tighter">Koala in één oogopslag</h3>
+            <h3 className="text-4xl md:text-5 font-black text-[#1B4332] tracking-tighter">Koala in één oogopslag</h3>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
@@ -167,18 +168,18 @@ const Landing: React.FC<LandingProps> = ({ user }) => {
             <p className="text-gray-500 font-medium text-sm leading-relaxed max-w-2xl mx-auto tracking-tight">Kies het plan dat bij jouw onderneming past en laat Koala uw antwoorden maken. Geniet van extra vrije uren in de week!</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 items-stretch">
             {PLANS.map((plan, i) => (
               <div 
                 key={i} 
-                className={`bg-white p-8 md:p-10 rounded-[2.5rem] shadow-sm border-2 transition-all duration-500 flex flex-col ${
+                className={`relative bg-white p-8 md:p-10 rounded-[2.5rem] shadow-sm border-2 transition-all duration-500 flex flex-col ${
                   plan.isRecommended 
-                    ? 'border-[#2D6A4F] shadow-xl scale-105 z-10' 
+                    ? 'border-[#2D6A4F] shadow-xl z-10' 
                     : 'border-gray-50 hover:border-gray-100 hover:shadow-md'
                 }`}
               >
                 {plan.isRecommended && (
-                  <div className="bg-[#2D6A4F] text-white text-[8px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full self-center mb-6">
+                  <div className="absolute -top-[18px] left-1/2 -translate-x-1/2 bg-[#2D6A4F] text-white text-[9px] font-black uppercase tracking-widest px-6 py-2.5 rounded-full shadow-lg whitespace-nowrap z-20">
                     Populairste keuze
                   </div>
                 )}
