@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, PlanType } from '../types';
 import { PLANS } from '../constants';
+import { GoogleGenAI } from "@google/genai";
 
 interface OnboardingProps {
   user: User | null;
@@ -14,13 +15,44 @@ const Onboarding: React.FC<OnboardingProps> = ({ user, onUpdateUser }) => {
   
   const [step, setStep] = useState(1);
   const [businessName, setBusinessName] = useState(user?.businessName || '');
+  const [businessVibeUrl, setBusinessVibeUrl] = useState(user?.businessVibeUrl || '');
   const [selectedPlan, setSelectedPlan] = useState<string>('Gratis');
+  const [generatingVibe, setGeneratingVibe] = useState(false);
 
-  const handleNextStep = () => {
+  const generateVibe = async () => {
+    if (!businessName.trim()) return;
+    setGeneratingVibe(true);
+    try {
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const prompt = `A clean, minimalist 3D corporate illustration of a modern office. On the office wall or glass, display ONLY the exact text "${businessName}". DO NOT invent or add any extra words, taglines, or industry descriptions. Include a subtle, friendly koala sitting at a desk. Style: professional, high-end, soft lighting, green and white color palette. 16:9 aspect ratio.`;
+      
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash-image',
+        contents: { parts: [{ text: prompt }] },
+        config: { imageConfig: { aspectRatio: "16:9" } }
+      });
+
+      for (const part of response.candidates[0].content.parts) {
+        if (part.inlineData) {
+          setBusinessVibeUrl(`data:image/png;base64,${part.inlineData.data}`);
+          break;
+        }
+      }
+    } catch (err) {
+      console.error("Nano Banana generation failed", err);
+    } finally {
+      setGeneratingVibe(false);
+    }
+  };
+
+  const handleNextStep = async () => {
     if (step === 1) {
       if (!businessName.trim()) {
         alert("Vul a.u.b. de naam van je zaak in.");
         return;
+      }
+      if (!businessVibeUrl && !generatingVibe) {
+        await generateVibe();
       }
       setStep(2);
     }
@@ -36,6 +68,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ user, onUpdateUser }) => {
       ...user,
       onboardingCompleted: true,
       businessName: businessName.trim(),
+      businessVibeUrl: businessVibeUrl,
       plan: finalPlan as PlanType,
       maxResponses: planConfig.limit
     };
@@ -49,7 +82,6 @@ const Onboarding: React.FC<OnboardingProps> = ({ user, onUpdateUser }) => {
       
       <div className={`w-full ${step === 2 ? 'max-w-5xl' : 'max-w-md'} bg-white rounded-[3rem] shadow-[0_30px_100px_rgba(0,0,0,0.15)] border border-white relative animate-in zoom-in-95 slide-in-from-bottom-10 duration-500 overflow-hidden flex flex-col transition-all duration-500`}>
         
-        {/* Progress Bars - Exact matched to screenshot style */}
         <div className="flex justify-center gap-3 pt-10">
            {[1, 2].map(s => (
              <div key={s} className={`h-2 rounded-full transition-all duration-500 ${step >= s ? 'w-16 bg-[#2D6A4F]' : 'w-16 bg-gray-100'}`} />
@@ -62,9 +94,9 @@ const Onboarding: React.FC<OnboardingProps> = ({ user, onUpdateUser }) => {
             <div className="animate-in slide-in-from-right duration-500 text-center w-full">
               <div className="text-5xl mb-8 filter drop-shadow-sm select-none">🏢</div>
               <h2 className="text-[28px] font-black text-[#1C1C1C] mb-2 tracking-tighter uppercase leading-none">Jouw Bedrijf</h2>
-              <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mb-12">Hoe heet je zaak?</p>
+              <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mb-12">Maak je Koala Business Vibe</p>
               
-              <div className="space-y-6 mb-12">
+              <div className="space-y-6 mb-8">
                 <input 
                   type="text" 
                   placeholder="Naam van je zaak..." 
@@ -74,12 +106,27 @@ const Onboarding: React.FC<OnboardingProps> = ({ user, onUpdateUser }) => {
                   className="w-full px-6 py-6 rounded-2xl bg-white border-2 border-transparent focus:border-[#2D6A4F] outline-none font-bold text-xl text-center shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)] transition-all placeholder:text-gray-300 ring-1 ring-gray-100" 
                 />
               </div>
+
+              {businessVibeUrl && (
+                <div className="mb-8 rounded-2xl overflow-hidden shadow-inner border border-gray-100 aspect-video bg-gray-50 flex items-center justify-center relative group">
+                  <img src={businessVibeUrl} className="w-full h-full object-cover" alt="Business Vibe" />
+                  <button onClick={generateVibe} className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm p-3 rounded-xl shadow-lg text-[9px] font-black uppercase tracking-widest text-[#1B4332] opacity-0 group-hover:opacity-100 transition-all">Regenereer ✨</button>
+                </div>
+              )}
+
+              {generatingVibe && !businessVibeUrl && (
+                <div className="mb-8 rounded-2xl overflow-hidden border border-gray-100 aspect-video bg-gray-50 flex flex-col items-center justify-center gap-4 animate-pulse">
+                  <div className="w-10 h-10 border-2 border-[#1B4332]/20 border-t-[#1B4332] rounded-full animate-spin"></div>
+                  <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Nano Banana genereert je vibe...</p>
+                </div>
+              )}
               
               <button 
                 onClick={handleNextStep} 
-                className="w-full bg-[#1B4332] text-white py-6 rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-xl active:scale-95 hover:bg-[#2D6A4F] transition-all"
+                disabled={generatingVibe}
+                className="w-full bg-[#1B4332] text-white py-6 rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-xl active:scale-95 hover:bg-[#2D6A4F] transition-all disabled:opacity-50"
               >
-                Kies je Plan →
+                {generatingVibe ? 'Momentje...' : 'Volgende Stap →'}
               </button>
             </div>
           )}
@@ -97,7 +144,6 @@ const Onboarding: React.FC<OnboardingProps> = ({ user, onUpdateUser }) => {
                 <p className="text-gray-400 font-bold text-[10px] md:text-[12px] uppercase tracking-widest">Klaar om tijd te besparen?</p>
               </div>
               
-              {/* Responsive Grid Layout for "Naast elkaar" */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
                 {PLANS.map((plan) => (
                   <button 
@@ -118,7 +164,6 @@ const Onboarding: React.FC<OnboardingProps> = ({ user, onUpdateUser }) => {
                       </div>
                       <p className="text-gray-400 font-bold text-xs mb-6 uppercase tracking-widest">{plan.price} / maand</p>
                       
-                      {/* Plan features summary */}
                       <ul className="space-y-3 mb-6">
                         <li className="flex items-center gap-2">
                           <span className="text-[10px]">✨</span>

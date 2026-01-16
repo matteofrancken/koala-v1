@@ -27,6 +27,7 @@ export interface User {
   email: string;
   fullName: string;
   businessName: string;
+  businessVibeUrl?: string; // De Nano Banana generatie
   onboardingCompleted: boolean;
   password?: string;
   plan: PlanType;
@@ -50,6 +51,7 @@ export interface GeneratedResponse {
   intent: string;
   emotion: string;
   urgency: string;
+  visualUrl?: string; // Nano Banana power voor historiek
   createdAt: string;
 }
 

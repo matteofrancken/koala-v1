@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { User, ToneType, LengthType, GeneratedResponse, PlanType } from '../types';
 import { generateKoalaResponse } from '../services/ai';
 import { KoalaIcon } from '../constants';
@@ -20,6 +21,7 @@ const NewMessage: React.FC<NewMessageProps> = ({ user, onComplete, onRecordUsage
   const [tone, setTone] = useState<ToneType>(
     user?.plan === PlanType.FREE ? ToneType.FORMAL : ToneType.BUSINESS
   );
+  const [customToneDescription, setCustomToneDescription] = useState('');
   
   const [details, setDetails] = useState<string[]>(['', '', '']);
   const [length, setLength] = useState<LengthType>(LengthType.NORMAL);
@@ -62,7 +64,7 @@ const NewMessage: React.FC<NewMessageProps> = ({ user, onComplete, onRecordUsage
 
     setLoading(true);
     try {
-      const activeTone = tone;
+      const activeTone = tone === ToneType.CUSTOM ? `Aangepaste stijl: ${customToneDescription}` : tone;
       const combinedDetails = details.filter(d => d.trim() !== "").join(" | ");
       
       const data = await generateKoalaResponse(
@@ -94,7 +96,7 @@ const NewMessage: React.FC<NewMessageProps> = ({ user, onComplete, onRecordUsage
       originalMessage: message,
       aiResponseA: result.variantA,
       aiResponseB: result.variantB,
-      tone: tone,
+      tone: tone === ToneType.CUSTOM ? `Custom: ${customToneDescription}` : tone,
       length,
       intent: result.intent,
       emotion: result.emotion,
@@ -169,11 +171,13 @@ const NewMessage: React.FC<NewMessageProps> = ({ user, onComplete, onRecordUsage
         {step === 2 && (
           <div className={`flex-1 flex flex-col ${getStepAnimation()}`}>
             <h2 className="text-2xl md:text-3xl font-black mb-6 tracking-tight">Kies de toon</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[400px] overflow-y-auto no-scrollbar pr-1">
-              {Object.values(ToneType).filter(t => t !== ToneType.CUSTOM).map((t, index) => {
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[400px] overflow-y-auto no-scrollbar pr-1 pb-4">
+              {Object.values(ToneType).map((t, index) => {
                 let isLocked = false;
                 if (user?.plan === PlanType.FREE) isLocked = t !== ToneType.FORMAL;
-                else if (user?.plan === PlanType.STARTER) isLocked = index > 2;
+                else if (user?.plan === PlanType.STARTER) isLocked = ![ToneType.FORMAL, ToneType.BUSINESS, ToneType.INFORMAL].includes(t);
+                else if (user?.plan === PlanType.PRO) isLocked = t === ToneType.CUSTOM;
+
                 return (
                   <button
                     key={t}
@@ -182,15 +186,45 @@ const NewMessage: React.FC<NewMessageProps> = ({ user, onComplete, onRecordUsage
                       tone === t ? 'border-[#2D6A4F] bg-green-50 shadow-md' : 'border-gray-50 bg-gray-50/50 hover:bg-white hover:border-gray-200'
                     }`}
                   >
-                    <span className={`text-sm md:text-base font-black ${isLocked ? 'opacity-40' : 'text-gray-800'}`}>{t}</span>
-                    {isLocked && <span className="bg-[#FFC300] text-[#1B4332] font-black px-2 py-1 rounded-full text-[8px] uppercase">Upgrade</span>}
+                    <div className="flex flex-col">
+                      <span className={`text-sm md:text-base font-black ${isLocked ? 'opacity-40' : 'text-gray-800'}`}>
+                        {t === ToneType.CUSTOM ? '✨ Custom Stijl' : t}
+                      </span>
+                    </div>
+                    {isLocked && <span className="bg-[#FFC300] text-[#1B4332] font-black px-3 py-1.5 rounded-full text-[8px] uppercase tracking-widest shadow-sm">Upgrade</span>}
                   </button>
                 );
               })}
             </div>
+
+            {tone === ToneType.CUSTOM && user?.plan === PlanType.UNLIMITED && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-6 space-y-3"
+              >
+                <label className="text-[10px] font-black uppercase tracking-widest text-[#2D6A4F] px-2 flex items-center gap-2">
+                  <span>Beschrijf je eigen stijl</span>
+                  <span className="animate-pulse">✨</span>
+                </label>
+                <textarea
+                  className="w-full p-6 rounded-2xl border-2 border-gray-50 bg-gray-50 focus:bg-white focus:border-[#2D6A4F] outline-none transition-all duration-300 text-sm shadow-inner font-medium h-24"
+                  placeholder="Vul hier je eigen communicatiestijl in!"
+                  value={customToneDescription}
+                  onChange={(e) => setCustomToneDescription(e.target.value)}
+                />
+              </motion.div>
+            )}
+
             <div className="flex gap-4 mt-auto pt-8">
               <button onClick={() => goToStep(1)} className="flex-1 py-5 font-black uppercase tracking-widest text-[10px] text-gray-400">Terug</button>
-              <button onClick={() => goToStep(3)} className="flex-[2] bg-[#1B4332] text-white py-5 rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-lg">Volgende &rarr;</button>
+              <button 
+                onClick={() => goToStep(3)} 
+                disabled={tone === ToneType.CUSTOM && !customToneDescription.trim()}
+                className="flex-[2] bg-[#1B4332] text-white py-5 rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-lg disabled:opacity-50"
+              >
+                Volgende &rarr;
+              </button>
             </div>
           </div>
         )}
