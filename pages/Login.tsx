@@ -73,7 +73,8 @@ const Login: React.FC<LoginProps> = ({ mode, onLogin }) => {
              await onLogin(newUser);
           }
           
-          navigate('/onboarding');
+          // Direct naar dashboard, de rest wordt door de popup afgehandeld
+          navigate('/dashboard');
         }
       } else {
         const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
@@ -90,11 +91,7 @@ const Login: React.FC<LoginProps> = ({ mode, onLogin }) => {
           const user = await backendService.getUser(cleanEmail);
           if (user) {
             await onLogin(user);
-            if (!user.onboardingCompleted) {
-              navigate('/onboarding');
-            } else {
-              navigate('/dashboard');
-            }
+            navigate('/dashboard');
           }
         }
       }
@@ -110,11 +107,11 @@ const Login: React.FC<LoginProps> = ({ mode, onLogin }) => {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-[#1B4332]/10 backdrop-blur-md animate-in fade-in duration-300">
-      {/* Background click handler met lagere z-index dan het formulier zelf */}
+      {/* Background click handler */}
       <div className="absolute inset-0 z-0" onClick={() => !isJuridicalOpen && navigate('/')}></div>
 
-      {/* Main Login Card - Z-index verhoogd en expliciet gemaakt */}
-      <div className={`w-full max-w-md bg-white p-10 rounded-[3rem] shadow-[0_30px_100px_rgba(0,0,0,0.15)] border border-white/50 relative animate-in zoom-in-95 slide-in-from-bottom-10 duration-500 z-10 ${isJuridicalOpen ? 'opacity-20 scale-[0.98] blur-sm pointer-events-none' : ''}`}>
+      {/* Main Login Card */}
+      <div className={`w-full max-w-md bg-white p-10 rounded-[3rem] shadow-[0_30px_100px_rgba(0,0,0,0.15)] border border-white/50 relative animate-in zoom-in-95 slide-in-from-bottom-10 duration-500 z-10 ${isJuridicalOpen ? 'opacity-20 pointer-events-none' : ''}`}>
         <button 
           onClick={() => navigate('/')}
           className="absolute top-8 left-8 w-10 h-10 bg-[#F8F9FA] rounded-full flex items-center justify-center text-gray-400 hover:text-[#1B4332] hover:bg-gray-100 transition-all active:scale-90 group"
@@ -200,7 +197,7 @@ const Login: React.FC<LoginProps> = ({ mode, onLogin }) => {
         </div>
       </div>
       
-      {/* Outlet for Terms/Privacy popups - rendered at higher z-index if active */}
+      {/* Outlet for Terms/Privacy popups */}
       {isJuridicalOpen && (
         <div className="absolute inset-0 z-[120] flex items-center justify-center p-4">
           <Outlet />

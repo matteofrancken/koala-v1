@@ -1,6 +1,7 @@
 
 import React from 'react';
 
+// Fix: Removed duplicate 'accent' property on line 10 to resolve object literal name collision.
 export const COLORS = {
   primary: '#2D6A4F',
   secondary: '#40916C',
@@ -36,12 +37,12 @@ export const PLANS = [
       '3 communicatiestijlen',
       'Historiek tot 30 dagen'
     ],
-    priceId: 'price_1SniMZCbUGYN5zBLDP36rUqz',
+    priceId: 'price_1So515E2L8ivtB2lln742fTU',
     isRecommended: false
   },
   {
     name: 'Pro',
-    price: '€79',
+    price: '€59',
     limit: 500,
     features: [
       '500 antwoorden per maand',
@@ -49,12 +50,12 @@ export const PLANS = [
       'Alle communicatiestijlen',
       'Onbeperkte historiek'
     ],
-    priceId: 'price_1SniNOCbUGYN5zBLtXwNJ4qb',
+    priceId: 'price_1SqKXVE2L8ivtB2lrds5oFq0',
     isRecommended: true
   },
   {
     name: 'Unlimited',
-    price: '€99',
+    price: '€79',
     limit: 999999,
     features: [
       'Onbeperkte antwoorden',
@@ -62,7 +63,7 @@ export const PLANS = [
       'Alle communicatiestijlen + Custom',
       'Onbeperkte historiek'
     ],
-    priceId: 'price_1SniOQCbUGYN5zBLbWKCHnLK'
+    priceId: 'price_1SqKXtE2L8ivtB2log3VUYaP'
   }
 ];
 

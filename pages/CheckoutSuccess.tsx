@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { User, PlanType } from '../types';
-import { KoalaIcon } from '../constants';
+import { KoalaIcon, PLANS } from '../constants';
 
 interface CheckoutSuccessProps {
   user: User | null;
@@ -12,26 +12,26 @@ interface CheckoutSuccessProps {
 const CheckoutSuccess: React.FC<CheckoutSuccessProps> = ({ user, onUpgrade }) => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const planName = searchParams.get('plan') || 'Pro';
+  
+  const priceId = searchParams.get('price_id');
+  const plan = PLANS.find(p => p.priceId === priceId) || PLANS[2]; // Default naar Pro als niet gevonden
 
   useEffect(() => {
-    const limit = parseInt(searchParams.get('limit') || '500', 10);
-
-    if (user && user.plan !== planName) {
+    if (user && plan) {
       const updatedUser: User = {
         ...user,
-        plan: planName as PlanType,
-        maxResponses: limit,
+        plan: plan.name as PlanType,
+        maxResponses: plan.limit,
         subscriptionStatus: 'active'
       };
       onUpgrade(updatedUser);
     }
-  }, [user, planName, searchParams, onUpgrade]);
+  }, [user, plan, onUpgrade]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[70vh] md:min-h-[80vh] animate-in fade-in duration-700 px-6">
       
-      {/* Logo Card with Badge - Perfect matched with screenshot */}
+      {/* Logo Card with Badge */}
       <div className="relative mb-12">
         <div className="w-32 h-32 md:w-40 md:h-40 bg-white rounded-[2.5rem] shadow-[0_20px_60px_rgba(0,0,0,0.04)] border border-gray-100 flex items-center justify-center relative z-10">
           <KoalaIcon className="w-16 h-16 md:w-20 md:h-20 text-[#2D6A4F]" />
@@ -50,7 +50,7 @@ const CheckoutSuccess: React.FC<CheckoutSuccessProps> = ({ user, onUpgrade }) =>
         </h2>
         
         <p className="text-gray-500 text-base md:text-lg font-medium leading-relaxed mb-12 px-2">
-          Hoera! Je account is succesvol geüpgraded naar <span className="text-[#1B4332] font-black">{planName}</span>. Koala is klaar voor het zware werk.
+          Hoera! Je account is succesvol geüpgraded naar <span className="text-[#1B4332] font-black">{plan.name}</span>. Koala is klaar voor het zware werk.
         </p>
 
         {/* Action Button */}

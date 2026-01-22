@@ -7,76 +7,106 @@ const TermsOfService: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 md:p-8 bg-[#1B4332]/40 backdrop-blur-2xl animate-in fade-in duration-300">
-      <div className="absolute inset-0" onClick={() => navigate(-1)}></div>
-      
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-4xl bg-white rounded-[3rem] shadow-[0_60px_120px_rgba(0,0,0,0.3)] border border-white relative overflow-hidden flex flex-col max-h-[90vh]"
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.95, y: 40 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95, y: 40 }}
+      transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+      className="w-full max-w-4xl bg-white rounded-[3.5rem] shadow-[0_60px_120px_rgba(0,0,0,0.3)] border border-white relative overflow-hidden flex flex-col max-h-[90vh] mx-4"
+    >
+      <button 
+        onClick={() => navigate(-1)}
+        className="absolute top-10 left-10 z-20 w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-400 hover:text-[#1B4332] hover:bg-gray-100 transition-all active:scale-90 group shadow-sm"
       >
+        <span className="text-3xl group-hover:-translate-x-1 transition-transform">←</span>
+      </button>
+
+      <div className="p-12 md:p-16 pb-10 text-center border-b border-gray-50">
+        <h1 className="text-3xl md:text-5xl font-black text-[#1B4332] uppercase tracking-tighter mt-16 md:mt-0 leading-none">Terms of Service</h1>
+        <p className="text-[10px] md:text-[12px] font-black text-gray-300 uppercase tracking-[0.4em] mt-4">LAATSTE UPDATE: 9 JANUARI 2026</p>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-12 md:p-20 prose prose-sm max-w-none text-gray-600 font-medium leading-relaxed space-y-12 no-scrollbar">
+        <section className="bg-green-50/50 p-10 rounded-[2.5rem] border border-green-100 italic text-base text-center font-bold text-[#1B4332]">
+          Deze voorwaarden regelen het gebruik van Koala (“de App”). Door de App te gebruiken, gaat de gebruiker akkoord met deze voorwaarden.
+        </section>
+
+        <section className="space-y-6">
+          <h2 className="text-2xl font-black text-[#1B4332] uppercase tracking-tight mb-6">1. DEFINITIES</h2>
+          <ul className="space-y-6 list-none p-0">
+            <li className="flex items-start gap-4"><span><strong>“Gebruiker”:</strong> iedere persoon die de App gebruikt.</span></li>
+            <li className="flex items-start gap-4"><span><strong>“Dienst”:</strong> alle functionaliteiten van Koala.</span></li>
+            <li className="flex items-start gap-4"><span><strong>“Verwerkingsverantwoordelijke”:</strong> Matteo Francken.</span></li>
+          </ul>
+        </section>
+
+        <section className="space-y-6">
+          <h2 className="text-2xl font-black text-[#1B4332] uppercase tracking-tight mb-6">2. TOEGANG EN GEBRUIK</h2>
+          <ul className="space-y-6 list-none p-0 mt-6">
+            <li className="flex items-start gap-4"><span>De gebruiker mag de App uitsluitend gebruiken volgens deze voorwaarden.</span></li>
+            <li className="flex items-start gap-4"><span>De gebruiker is verantwoordelijk voor alle inhoud die via de App wordt ingevoerd.</span></li>
+            <li className="flex items-start gap-4"><span>Misbruik, waaronder spam, illegale inhoud of het proberen om systemen te manipuleren, is verboden.</span></li>
+          </ul>
+        </section>
+
+        <section className="space-y-6">
+          <h2 className="text-2xl font-black text-[#1B4332] uppercase tracking-tight mb-6">3. AI-FUNCTIONALITEIT</h2>
+          <ul className="space-y-6 list-none p-0 mt-6">
+            <li className="flex items-start gap-4"><span>Antwoorden worden automatisch gegenereerd door AI-modellen.</span></li>
+            <li className="flex items-start gap-4"><span>De gebruiker erkent dat AI-uitvoer fouten kan bevatten.</span></li>
+            <li className="flex items-start gap-4"><span>De App biedt geen juridisch, medisch, financieel of professioneel advies.</span></li>
+          </ul>
+        </section>
+
+        <section className="space-y-6">
+          <h2 className="text-2xl font-black text-[#1B4332] uppercase tracking-tight mb-6">4. INTELLECTUELE EIGENDOM</h2>
+          <ul className="space-y-6 list-none p-0 mt-6">
+            <li className="flex items-start gap-4"><span>Alle rechten op de App behoren toe aan de Verwerkingsverantwoordelijke.</span></li>
+            <li className="flex items-start gap-4"><span>De gebruiker behoudt de rechten op eigen ingevoerde inhoud.</span></li>
+          </ul>
+        </section>
+
+        <section className="space-y-6">
+          <h2 className="text-2xl font-black text-[#1B4332] uppercase tracking-tight mb-6">5. AANSPRAKELIJKHEID</h2>
+          <p className="text-lg">De App wordt geleverd “zoals hij is”. De Verwerkingsverantwoordelijke is niet aansprakelijk voor schade die voortvloeit uit:</p>
+          <ul className="space-y-4 list-disc pl-10 mt-4 font-bold text-[#1B4332]">
+            <li>Onjuiste AI-uitvoer</li>
+            <li>Onderbrekingen</li>
+            <li>Diensten van derden</li>
+          </ul>
+          <p className="text-lg mt-6">De totale aansprakelijkheid is beperkt tot het bedrag dat de gebruiker heeft betaald in de laatste 12 maanden.</p>
+        </section>
+
+        <section className="space-y-6">
+          <h2 className="text-2xl font-black text-[#1B4332] uppercase tracking-tight mb-6">6. BEËINDIGING</h2>
+          <ul className="space-y-6 list-none p-0 mt-6">
+            <li className="flex items-start gap-4"><span>De gebruiker kan op elk moment stoppen met het gebruik van de App.</span></li>
+            <li className="flex items-start gap-4"><span>De Verwerkingsverantwoordelijke kan toegang opschorten bij misbruik.</span></li>
+          </ul>
+        </section>
+
+        <section className="space-y-6">
+          <h2 className="text-2xl font-black text-[#1B4332] uppercase tracking-tight mb-6">7. WIJZIGINGEN</h2>
+          <p className="text-lg">Voorwaarden kunnen worden bijgewerkt. De wijzigingen treden pas in werking zodra ze gepubliceerd zijn in de App en wanneer de gebruiker op de hoogte is.</p>
+        </section>
+
+        <section className="space-y-6">
+          <h2 className="text-2xl font-black text-[#1B4332] uppercase tracking-tight mb-6">8. TOEPASSELIJK RECHT</h2>
+          <p className="text-lg">Belgisch recht is van toepassing. Geschillen worden voorgelegd aan de rechtbanken van Antwerpen.</p>
+        </section>
+
+        <div className="h-20"></div>
+      </div>
+
+      <div className="p-12 bg-white border-t border-gray-50 flex justify-center shadow-[0_-20px_50px_rgba(0,0,0,0.02)] relative z-30">
         <button 
           onClick={() => navigate(-1)}
-          className="absolute top-8 left-8 z-20 w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center text-gray-400 hover:text-[#1B4332] hover:bg-gray-100 transition-all active:scale-90 group"
+          className="w-full max-w-md bg-[#1B4332] text-white py-7 rounded-[2.5rem] font-black uppercase tracking-widest text-[12px] shadow-2xl active:scale-95 transition-all hover:bg-[#2D6A4F]"
         >
-          <span className="text-2xl group-hover:-translate-x-1 transition-transform">←</span>
+          AKKOORD
         </button>
-
-        <div className="p-10 md:p-14 pb-8 text-center border-b border-gray-50">
-          <h1 className="text-3xl md:text-4xl font-black text-[#1B4332] uppercase tracking-tighter mt-14 md:mt-0">TERMS OF SERVICE – KOALA</h1>
-          <p className="text-[10px] font-black text-gray-300 uppercase tracking-[0.3em] mt-3">LAATSTE UPDATE: 9 JANUARI 2026</p>
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-10 md:p-16 prose prose-sm max-w-none text-gray-600 font-medium leading-relaxed space-y-12 scrollbar-hide">
-          <section className="bg-gray-50/50 p-8 rounded-[2rem] border border-gray-100 italic text-sm text-center">
-            Deze voorwaarden regelen het gebruik van Koala (“de App”). Door de App te gebruiken, gaat de gebruiker akkoord met deze voorwaarden.
-          </section>
-
-          <section>
-            <h2 className="text-xl font-black text-[#1B4332] uppercase tracking-tight mb-5">1. DEFINITIES</h2>
-            <ul className="space-y-4 list-none p-0">
-              <li className="flex items-start gap-3"><span className="text-[#2D6A4F] font-black">•</span><span><strong>“Gebruiker”:</strong> iedere natuurlijke persoon of rechtspersoon die de App gebruikt voor professionele doeleinden.</span></li>
-              <li className="flex items-start gap-3"><span className="text-[#2D6A4F] font-black">•</span><span><strong>“Dienst”:</strong> alle functionaliteiten, software en AI-modellen aangeboden via het Koala platform.</span></li>
-              <li className="flex items-start gap-3"><span className="text-[#2D6A4F] font-black">•</span><span><strong>“Verwerkingsverantwoordelijke”:</strong> Matteo Francken, Bosbeslaan 11, 2920 Kalmthout.</span></li>
-            </ul>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-black text-[#1B4332] uppercase tracking-tight mb-5">2. TOEGANG EN GEBRUIK</h2>
-            <p>Koala is specifiek ontwikkeld voor Belgische en Nederlandse KMO's om de efficiëntie van klantcommunicatie te verhogen.</p>
-            <ul className="space-y-4 list-none p-0 mt-4">
-              <li className="flex items-start gap-3"><span className="text-[#2D6A4F] font-black">•</span><span>De gebruiker is verantwoordelijk voor de vertrouwelijkheid van zijn accountgegevens.</span></li>
-              <li className="flex items-start gap-3"><span className="text-[#2D6A4F] font-black">•</span><span>Het is verboden om Koala te gebruiken voor het genereren van haatzaaiende tekst, spam of illegale content.</span></li>
-              <li className="flex items-start gap-3"><span className="text-[#2D6A4F] font-black">•</span><span>Misbruik van de systemen of pogingen tot manipulatie leiden tot onmiddellijke schorsing.</span></li>
-            </ul>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-black text-[#1B4332] uppercase tracking-tight mb-5">3. AI-FUNCTIONALITEIT EN VERANTWOORDELIJKHEID</h2>
-            <p>Antwoorden worden gegenereerd door geavanceerde taalmodellen (AI). De gebruiker erkent dat:</p>
-            <ul className="space-y-4 list-none p-0 mt-4">
-              <li className="flex items-start gap-3"><span className="text-[#2D6A4F] font-black">•</span><span>AI-uitvoer feitelijke onjuistheden kan bevatten.</span></li>
-              <li className="flex items-start gap-3"><span className="text-[#2D6A4F] font-black">•</span><span>De gebruiker te allen tijde zelf verantwoordelijk is voor het controleren en valideren van de tekst voordat deze naar een klant wordt verzonden.</span></li>
-              <li className="flex items-start gap-3"><span className="text-[#2D6A4F] font-black">•</span><span>Koala niet aansprakelijk is voor enige schade voortvloeiend uit het gebruik van AI-gegenereerde content.</span></li>
-            </ul>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-black text-[#1B4332] uppercase tracking-tight mb-5">4. ABONNEMENTEN EN BETALING</h2>
-            <p>Betalingen worden verwerkt via Stripe. Abonnementen worden maandelijks vernieuwd en kunnen op elk moment worden opgezegd via het dashboard.</p>
-          </section>
-        </div>
-
-        <div className="p-10 bg-gray-50/30 border-t border-gray-50 flex justify-center">
-          <button 
-            onClick={() => navigate(-1)}
-            className="w-full max-w-xs bg-[#1B4332] text-white py-6 rounded-[1.5rem] font-black uppercase tracking-widest text-[11px] shadow-xl active:scale-95 transition-all"
-          >
-            IK BEGRIJP HET
-          </button>
-        </div>
-      </motion.div>
-    </div>
+      </div>
+    </motion.div>
   );
 };
 

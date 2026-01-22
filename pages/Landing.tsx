@@ -1,7 +1,6 @@
-
 import React, { useState, useRef } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { KoalaIcon, PLANS } from '../constants';
 import { User } from '../types';
 import { GoogleGenAI } from "@google/genai";
@@ -20,6 +19,9 @@ const Landing: React.FC<LandingProps> = ({ user }) => {
   
   const overlays = ['terms', 'privacy', 'eula', 'ai-transparency', 'login', 'signup', 'onboarding'];
   const isOverlayPage = overlays.some(o => location.pathname.endsWith(o));
+  
+  // Specifically for legal/doc overlays to show them centered
+  const isDocOverlay = ['terms', 'privacy', 'eula', 'ai-transparency'].some(o => location.pathname.endsWith(o));
 
   const scrollToFeatures = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -76,7 +78,7 @@ const Landing: React.FC<LandingProps> = ({ user }) => {
         <div className="absolute top-1/2 -right-64 w-[700px] h-[700px] bg-[#FFC300]/5 rounded-full blur-[140px]"></div>
       </div>
 
-      <div className={`relative z-10 flex flex-col transition-all duration-700 ${isOverlayPage ? 'blur-md scale-[0.98] opacity-60 pointer-events-none' : ''}`}>
+      <div className={`relative z-10 flex flex-col transition-all duration-700 ${isOverlayPage ? 'opacity-40 pointer-events-none' : ''}`}>
         
         {/* --- NAVIGATION --- */}
         <nav className="w-full max-w-[1400px] mx-auto px-6 md:px-12 py-8 flex justify-between items-center">
@@ -171,12 +173,12 @@ const Landing: React.FC<LandingProps> = ({ user }) => {
         <section id="hoe-werkt-het" className="py-20 md:py-32 bg-white">
           <div className="max-w-[1400px] mx-auto px-6 md:px-12 text-center">
             <h2 className="text-3xl md:text-5xl font-black text-[#1B4332] tracking-tighter mb-16 md:mb-24">Hoe werkt Koala?</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-16 md:gap-12 text-left">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-16 md:gap-12 text-center">
               {steps.map((s, i) => (
                 <div key={i} className="space-y-4 md:space-y-6 relative group">
                   <div className="text-7xl md:text-8xl font-black text-[#2D6A4F]/20 leading-none group-hover:text-[#2D6A4F]/30 transition-colors duration-500">{s.num}</div>
                   <h3 className="text-2xl md:text-3xl font-black text-[#1B4332] tracking-tight">{s.title}</h3>
-                  <p className="text-gray-500 font-medium text-sm md:text-lg leading-relaxed">{s.desc}</p>
+                  <p className="text-gray-500 font-medium text-sm md:text-lg leading-relaxed max-w-xs mx-auto">{s.desc}</p>
                 </div>
               ))}
             </div>
@@ -212,7 +214,11 @@ const Landing: React.FC<LandingProps> = ({ user }) => {
         <footer className="w-full py-12 md:py-16 px-6 md:px-12 border-t border-gray-100 bg-white">
           <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row justify-between items-center gap-8 text-center md:text-left">
             <div className="flex flex-col items-center md:items-start gap-4">
-              <div className="flex items-center gap-3"><KoalaIcon className="w-8 h-8 opacity-40 grayscale" /><span className="font-black text-gray-300 uppercase tracking-widest text-sm">Koala AI</span></div>
+              <div className="flex items-center gap-3">
+                <KoalaIcon className="w-8 h-8 opacity-40 grayscale" />
+                <span className="font-black text-gray-300 uppercase tracking-widest text-sm">Koala AI</span>
+              </div>
+              <p className="text-[9px] md:text-[10px] font-black text-gray-300 uppercase tracking-[0.2em]">© 2026 KOALA AI. ALLE RECHTEN VOORBEHOUDEN.</p>
             </div>
             <div className="flex gap-8">
               <Link to="/terms" className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-[#1B4332]">Voorwaarden</Link>
@@ -221,7 +227,15 @@ const Landing: React.FC<LandingProps> = ({ user }) => {
           </div>
         </footer>
       </div>
-      <Outlet />
+
+      {/* --- OVERLAY CONTAINER --- */}
+      <AnimatePresence>
+        {(isDocOverlay || location.pathname.includes('/login') || location.pathname.includes('/signup')) && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-10 bg-[#1B4332]/20 animate-in fade-in duration-300 overflow-hidden">
+            <Outlet />
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

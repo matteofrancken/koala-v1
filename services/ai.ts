@@ -41,6 +41,7 @@ export async function generateKoalaResponse(
   businessName: string,
   keywords: string = ""
 ) {
+  // Gebruik Flash model voor maximale snelheid (volle toeren)
   const model = "gemini-3-flash-preview";
 
   const responseSchema = {
@@ -65,8 +66,8 @@ export async function generateKoalaResponse(
   const specificLengthInstruction = lengthPromptMap[length] || "";
 
   const systemInstruction = `
-    Je bent Koala, een hoogwaardige AI-assistent voor Belgische en Nederlandse KMO's. 
-    Jouw doel is om ondernemers tijd te besparen door perfecte klantantwoorden te schrijven.
+    Je bent Koala, een razendsnelle AI-assistent voor Belgische en Nederlandse KMO's. 
+    Jouw doel is om ondernemers tijd te besparen door onmiddellijk perfecte klantantwoorden te schrijven.
     
     GEBRUIKER INFO:
     - Naam: ${fullName}
@@ -99,7 +100,7 @@ export async function generateKoalaResponse(
     - Zet trefwoorden uit de details om naar vloeiende, grammaticaal correcte zinnen.
     - Corrigeer fouten in de details automatisch.
     
-    Belangrijk: Retourneer ENKEL het JSON object volgens het schema.
+    Belangrijk: Retourneer ENKEL het JSON object volgens het schema. Wees bondig en accuraat.
   `;
 
   try {
@@ -109,7 +110,8 @@ export async function generateKoalaResponse(
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        responseSchema
+        responseSchema,
+        temperature: 0.2 // Lagere temperatuur voor consistentere en snellere output
       }
     });
 

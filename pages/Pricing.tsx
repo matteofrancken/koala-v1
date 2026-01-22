@@ -4,6 +4,7 @@ import { PlanType, User } from '../types';
 import { PLANS } from '../constants';
 import { useNavigate } from 'react-router-dom';
 import { stripeService } from '../services/stripe';
+import { motion } from 'framer-motion';
 
 interface PricingProps {
   user: User | null;
@@ -24,7 +25,6 @@ const Pricing: React.FC<PricingProps> = ({ user, onUpgrade }) => {
     const plan = PLANS.find(p => p.name === planName);
     if (!plan) return;
 
-    // Als het het gratis plan is, updaten we de user direct zonder Stripe
     if (plan.name === 'Gratis') {
       const updatedUser: User = {
         ...user,
@@ -51,63 +51,66 @@ const Pricing: React.FC<PricingProps> = ({ user, onUpgrade }) => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto py-8 pb-32 animate-in fade-in duration-700 px-4">
+    <div className="max-w-7xl mx-auto space-y-12 md:space-y-16 animate-in fade-in duration-700 pb-32">
       
-      {/* Loading Overlay */}
+      {/* --- LOADING OVERLAY --- */}
       {loadingPlan && (
-        <div className="fixed inset-0 bg-[#F8F9FA]/90 backdrop-blur-md z-[100] flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-300">
+        <div className="fixed inset-0 bg-[#F8F9FA]/90 backdrop-blur-xl z-[100] flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-300">
           <div className="w-16 h-16 border-4 border-[#1B4332]/10 border-t-[#1B4332] rounded-full animate-spin mb-8"></div>
-          <p className="font-black text-2xl text-[#1B4332] tracking-tighter">Beveiligde verbinding...</p>
+          <p className="font-black text-2xl text-[#1B4332] tracking-tighter uppercase">Beveiligde verbinding...</p>
           <p className="text-gray-400 text-[10px] font-black uppercase tracking-[0.2em] mt-4">Je wordt doorverwezen naar de betaalpagina</p>
         </div>
       )}
 
-      {/* Header */}
-      <div className="text-center mb-16 md:mb-24">
-        <h2 className="text-4xl md:text-6xl font-black text-[#1C1C1C] tracking-tighter mb-4">Kies je Plan</h2>
-        <div className="h-1.5 w-20 bg-[#2D6A4F] mx-auto rounded-full mb-6"></div>
-        <p className="text-gray-400 text-[10px] md:text-xs font-black uppercase tracking-[0.3em] leading-relaxed max-w-sm mx-auto">Focus op je onderneming, laat Koala schrijven.</p>
-      </div>
+      {/* --- HEADER --- */}
+      <header className="px-1 text-center md:text-left">
+        <h1 className="text-3xl md:text-5xl font-black text-[#1B4332] tracking-tighter mb-2">Kies je Plan</h1>
+        <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Upgrade voor meer kracht en tijdsbesparing</p>
+      </header>
 
       {error && (
-        <div className="mb-10 p-6 bg-red-50 text-red-700 rounded-2xl text-[11px] font-black uppercase tracking-widest border border-red-100 text-center animate-in slide-in-from-top-4">
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mx-1 p-6 bg-red-50 text-red-700 rounded-[2rem] text-[11px] font-black uppercase tracking-widest border border-red-100 text-center shadow-sm">
           {error}
-        </div>
+        </motion.div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 md:gap-8 items-stretch">
+      {/* --- PRICING GRID --- */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 md:gap-8 px-1">
         {PLANS.map((plan) => {
           const isCurrent = user?.plan === plan.name;
           const isPro = plan.name === 'Pro';
+          const isUnlimited = plan.name === 'Unlimited';
 
           return (
-            <div 
+            <motion.div 
+              whileHover={{ y: -5 }}
               key={plan.name} 
-              className={`relative bg-white rounded-[2.5rem] p-8 md:p-10 border-2 transition-all flex flex-col h-full ${
+              className={`relative bg-white rounded-[2.5rem] md:rounded-[3rem] p-10 border-2 transition-all flex flex-col h-full ${
                 isPro 
                   ? 'border-[#2D6A4F] shadow-2xl z-10' 
-                  : 'border-gray-50 shadow-sm hover:shadow-xl hover:border-gray-200'
+                  : 'border-gray-50 shadow-sm hover:border-gray-100'
               } ${isCurrent ? 'bg-green-50/20 border-[#FFC300]' : ''}`}
             >
               {isPro && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#FFC300] text-[#1B4332] text-[9px] font-black px-6 py-2.5 rounded-full uppercase tracking-widest shadow-xl whitespace-nowrap">
-                  Populairste keuze
+                <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-[#FFC300] text-[#1B4332] text-[9px] font-black px-8 py-3 rounded-full uppercase tracking-[0.2em] shadow-xl whitespace-nowrap border-4 border-white">
+                  Populair
                 </div>
               )}
 
-              <div className="mb-10 pt-4 text-center md:text-left">
-                <h3 className="text-2xl font-black mb-2 text-[#1C1C1C] uppercase tracking-tight">{plan.name}</h3>
-                <div className="flex items-baseline justify-center md:justify-start gap-1">
-                  <span className="text-4xl font-black tracking-tighter">{plan.price}</span>
-                  <span className="text-gray-400 font-bold text-[10px] uppercase">/ mnd</span>
+              <div className="mb-12 text-center">
+                <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest mb-4">Abonnement</p>
+                <h3 className="text-3xl font-black mb-4 text-[#1B4332] uppercase tracking-tighter">{plan.name}</h3>
+                <div className="flex items-baseline justify-center gap-1">
+                  <span className="text-5xl font-black tracking-tighter text-[#1C1C1C]">{plan.price}</span>
+                  <span className="text-gray-400 font-bold text-[10px] uppercase tracking-widest">/mnd</span>
                 </div>
               </div>
 
-              <div className="space-y-5 mb-12 flex-1">
+              <div className="space-y-6 mb-16 flex-1 flex flex-col items-center">
                 {plan.features.map(f => (
-                  <div key={f} className="flex items-start gap-3 text-xs font-bold text-gray-500 leading-tight">
-                    <span className="text-[#2D6A4F] text-lg leading-none shrink-0">✓</span>
-                    <span className="pt-0.5">{f}</span>
+                  <div key={f} className="flex items-center gap-3 text-[11px] font-bold text-gray-500 leading-relaxed uppercase tracking-tight text-center">
+                    <div className="w-5 h-5 bg-green-50 rounded-lg flex items-center justify-center text-[10px] shrink-0 text-[#2D6A4F]">✓</div>
+                    <span>{f}</span>
                   </div>
                 ))}
               </div>
@@ -115,24 +118,36 @@ const Pricing: React.FC<PricingProps> = ({ user, onUpgrade }) => {
               <button
                 disabled={isCurrent || (loadingPlan !== null)}
                 onClick={() => handlePurchase(plan.name)}
-                className={`w-full py-6 rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] shadow-lg transition-all duration-300 ${
+                className={`w-full py-6 rounded-[1.5rem] font-black uppercase tracking-[0.2em] text-[11px] shadow-lg transition-all duration-300 ${
                   isCurrent 
-                    ? 'bg-gray-100 text-gray-400 cursor-default' 
-                    : 'bg-[#1B4332] text-white active:scale-95 hover:bg-[#2D6A4F] hover:shadow-2xl'
+                    ? 'bg-gray-50 text-gray-300 cursor-default border border-gray-100' 
+                    : isPro || isUnlimited
+                      ? 'bg-[#1B4332] text-white active:scale-95 hover:bg-[#2D6A4F] hover:shadow-2xl'
+                      : 'bg-white text-[#1B4332] border-2 border-[#1B4332] active:scale-95 hover:bg-gray-50'
                 }`}
               >
                 {isCurrent ? "Huidig Plan" : "Kies Plan"}
               </button>
-            </div>
+            </motion.div>
           );
         })}
       </div>
 
-      <div className="mt-20 px-4 text-center opacity-60">
-        <p className="text-[10px] text-gray-400 font-medium leading-relaxed max-w-xl mx-auto uppercase tracking-widest">
-          Geen verborgen kosten • Opzegbaar op elk moment • Beveiligde betaling via Stripe
-        </p>
-      </div>
+      {/* --- FOOTER INFO --- */}
+      <footer className="pt-12 px-1">
+        <div className="bg-white/50 backdrop-blur-sm p-8 rounded-[2.5rem] border border-gray-100 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+          <div className="space-y-1">
+            <h4 className="text-sm font-black text-[#1B4332] uppercase tracking-widest">Vragen over je facturatie?</h4>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Neem contact op met onze support voor hulp.</p>
+          </div>
+          <div className="flex gap-4 md:gap-12 items-center">
+            <div className="flex flex-col items-center md:items-end">
+              <span className="text-[9px] font-black text-gray-300 uppercase tracking-widest">Betaal Veilig Met</span>
+              <span className="text-xl font-black text-[#635BFF] opacity-50">Stripe</span>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

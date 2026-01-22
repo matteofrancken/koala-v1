@@ -53,20 +53,44 @@ const Dashboard: React.FC<DashboardProps> = ({ user, history }) => {
   if (!user) return null;
 
   const usageText = user.maxResponses === 999999 ? `${user.responsesUsed} / ∞` : `${user.responsesUsed} / ${user.maxResponses}`;
+  const needsPersonalization = !user.businessName || user.businessName.trim() === '';
 
   return (
     <motion.div 
       variants={containerVariants} 
       initial="hidden" 
       animate="visible" 
-      className="space-y-8 md:space-y-12 pb-24 md:pb-0 w-full overflow-x-hidden"
+      className="space-y-8 md:space-y-12 pb-24 md:pb-0 w-full overflow-x-hidden relative"
     >
-      {/* --- HERO (Gefocust op Naam en Vibe) --- */}
+      {/* --- PERSONALIZATION REMINDER --- */}
+      {needsPersonalization && (
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-[#FFC300]/10 border-2 border-[#FFC300]/20 p-6 rounded-[2rem] flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm"
+        >
+          <div className="flex items-center gap-4 text-center md:text-left">
+            <div className="text-2xl">✨</div>
+            <div>
+              <p className="text-[#1B4332] font-black uppercase text-[11px] tracking-widest">Personaliseer Koala</p>
+              <p className="text-gray-500 font-bold text-[10px] uppercase tracking-tight">Vul in de instellingen uw bedrijfsnaam in. Zo kan Koala uw berichten personaliseren.</p>
+            </div>
+          </div>
+          <Link 
+            to="/settings" 
+            className="bg-[#1B4332] text-white px-8 py-3 rounded-xl font-black uppercase tracking-widest text-[9px] shadow-lg hover:bg-[#2D6A4F] transition-all whitespace-nowrap"
+          >
+            Ga naar instellingen
+          </Link>
+        </motion.div>
+      )}
+
+      {/* --- HERO --- */}
       <motion.section 
         variants={itemVariants} 
         className="relative bg-[#113225] text-white rounded-[2.5rem] md:rounded-[4rem] shadow-2xl overflow-hidden min-h-[400px] lg:min-h-[450px] flex flex-col justify-end p-8 md:p-16"
       >
-        {/* Full Background Vibe Image */}
+        {/* Background Vibe Image */}
         {user.businessVibeUrl ? (
           <div className="absolute inset-0 z-0">
             <motion.img 
@@ -77,7 +101,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, history }) => {
               className="w-full h-full object-cover object-center" 
               alt="Dashboard vibe" 
             />
-            {/* Gradient overlay for readability */}
             <div className="absolute inset-0 bg-gradient-to-t from-[#113225]/90 via-[#113225]/30 to-transparent md:bg-gradient-to-r md:from-[#113225]/80 md:via-[#113225]/20 md:to-transparent"></div>
           </div>
         ) : (
@@ -171,7 +194,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, history }) => {
               <motion.div whileHover={{ y: -5 }} key={item.id}>
                 <Link to="/history" className="bg-white p-8 md:p-10 rounded-[2.5rem] border border-gray-50 hover:border-green-100 hover:shadow-xl transition-all duration-300 group shadow-sm flex flex-col gap-5 h-full">
                   <div className="flex justify-between items-start">
-                    <span className="text-[9px] font-black text-green-700 bg-green-50 px-4 py-2 rounded-lg uppercase tracking-widest">{item.intent}</span>
+                    <span className="text-[9px] font-black text-green-700 bg-green-50 px-4 py-2 rounded-xl border border-green-100 group-hover:bg-[#2D6A4F] group-hover:text-white transition-all duration-300">{item.intent}</span>
                     <span className="text-[9px] text-gray-300 font-black uppercase">{new Date(item.createdAt).toLocaleDateString()}</span>
                   </div>
                   <p className="text-base text-gray-600 line-clamp-3 italic font-medium leading-relaxed group-hover:text-[#1B4332]">"{item.originalMessage}"</p>

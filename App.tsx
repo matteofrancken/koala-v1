@@ -4,7 +4,6 @@ import { HashRouter, Routes, Route, Navigate, Link, useLocation, Outlet, useNavi
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, PlanType, AppState, GeneratedResponse, LengthType } from './types';
 import Landing from './pages/Landing';
-import Onboarding from './pages/Onboarding';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import NewMessage from './pages/NewMessage';
@@ -20,6 +19,19 @@ import AiTransparency from './pages/AiTransparency';
 import { KoalaIcon } from './constants';
 import { backendService } from './services/backend';
 import { supabase } from './services/supabase';
+
+// Helper component to force scroll to top on every navigation
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    const overlays = ['/terms', '/privacy', '/eula', '/ai-transparency'];
+    const isOverlay = overlays.some(o => pathname.endsWith(o));
+    if (!isOverlay) {
+      window.scrollTo(0, 0);
+    }
+  }, [pathname]);
+  return null;
+};
 
 const App: React.FC = () => {
   const [state, setState] = useState<AppState>({
@@ -44,11 +56,28 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
-    loadAppData();
+    // FORCE LOGOUT ON EVERY REFRESH / INITIAL LOAD
+    const forceInitialLogout = async () => {
+      // Clear all local session data immediately
+      localStorage.clear();
+      // Inform Supabase to sign out (invalidates token)
+      await supabase.auth.signOut();
+      // Ensure the state is clean and show the landing page
+      setState({ user: null, history: [], loading: false });
+    };
+
+    forceInitialLogout();
+
+    // Setup listener for future login events during this same session
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_IN' || event === 'USER_UPDATED') loadAppData();
-      if (event === 'SIGNED_OUT') setState({ user: null, history: [], loading: false });
+      if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+        loadAppData();
+      }
+      if (event === 'SIGNED_OUT') {
+        setState({ user: null, history: [], loading: false });
+      }
     });
+
     return () => subscription.unsubscribe();
   }, []);
 
@@ -66,7 +95,7 @@ const App: React.FC = () => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    localStorage.removeItem('koala_session_email');
+    localStorage.clear();
     setState({ user: null, history: [], loading: false });
     window.location.hash = '#/';
   };
@@ -83,6 +112,7 @@ const App: React.FC = () => {
 
   return (
     <HashRouter>
+      <ScrollToTop />
       <RoutesWrapper 
         state={state} 
         handleLogin={handleLogin} 
@@ -100,6 +130,13 @@ const RoutesWrapper = ({ state, handleLogin, handleUpdateUser, handleLogout, loa
   const navigate = useNavigate();
   const initialRedirectDone = useRef(false);
   
+  // Auto-redirect for logged in users on landing page
+  useEffect(() => {
+    if (state.user && location.pathname === '/') {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [state.user, location.pathname, navigate]);
+
   useEffect(() => {
     if (!state.loading && !state.user && !initialRedirectDone.current) {
       if (location.pathname !== '/') {
@@ -107,10 +144,10 @@ const RoutesWrapper = ({ state, handleLogin, handleUpdateUser, handleLogout, loa
       }
       initialRedirectDone.current = true;
     }
-  }, [state.loading, state.user, navigate]);
+  }, [state.loading, state.user, navigate, location.pathname]);
 
   return (
-    <Routes location={location} key={location.pathname}>
+    <Routes location={location}>
       <Route path="/" element={<Landing user={state.user} />}>
         <Route path="login" element={<Login mode="login" onLogin={handleLogin} />}>
           <Route path="terms" element={<TermsOfService />} />
@@ -125,9 +162,6 @@ const RoutesWrapper = ({ state, handleLogin, handleUpdateUser, handleLogout, loa
         <Route path="eula" element={<Eula />} />
         <Route path="ai-transparency" element={<AiTransparency />} />
         <Route path="stripe-checkout" element={<StripeMock />} />
-        <Route path="onboarding" element={
-          state.user ? <Onboarding user={state.user} onUpdateUser={handleUpdateUser} /> : <Navigate to="/signup" />
-        } />
       </Route>
 
       <Route element={state.user ? <Layout user={state.user} onLogout={handleLogout} /> : <Navigate to="/" />}>
@@ -135,11 +169,19 @@ const RoutesWrapper = ({ state, handleLogin, handleUpdateUser, handleLogout, loa
         <Route path="/new" element={
           <NewMessage 
             user={state.user} 
-            onComplete={async (item) => {
-              await backendService.addToHistory(item);
-              await loadAppData();
+            onComplete={async (item: GeneratedResponse) => {
+              try {
+                await backendService.addToHistory(item);
+                setState((prev: AppState) => ({
+                  ...prev,
+                  history: [item, ...prev.history]
+                }));
+              } catch (err) {
+                console.error("Critical: Could not save message to history database", err);
+                throw err;
+              }
             }} 
-            onRecordUsage={async (len) => {
+            onRecordUsage={async (len: LengthType) => {
               if (state.user) {
                 const updatedUser = { 
                   ...state.user, 
@@ -155,9 +197,13 @@ const RoutesWrapper = ({ state, handleLogin, handleUpdateUser, handleLogout, loa
           <History 
             user={state.user} 
             history={state.history} 
-            onDelete={async (id) => {
+            onUpdate={loadAppData}
+            onDelete={async (id: string) => {
+              setState((prev: AppState) => ({
+                ...prev,
+                history: prev.history.filter(h => h.id !== id)
+              }));
               await backendService.deleteFromHistory(id);
-              await loadAppData();
             }}
           />
         } />
@@ -178,6 +224,12 @@ const RoutesWrapper = ({ state, handleLogin, handleUpdateUser, handleLogout, loa
 const Layout: React.FC<{ user: User; onLogout: () => void }> = ({ user, onLogout }) => {
   const location = useLocation();
   
+  // Blur/Dim logic only for destructive or system-critical overlays (onboarding, login logic)
+  // We explicitly EXCLUDE legal docs from the dimming effect.
+  const isOverlayActive = location.pathname.includes('/onboarding') || 
+                          location.pathname.includes('/login') || 
+                          location.pathname.includes('/signup');
+
   const NavItem = ({ to, icon, label }: { to: string; icon: string; label: string }) => {
     const isActive = location.pathname.startsWith(to);
     return (
@@ -194,10 +246,10 @@ const Layout: React.FC<{ user: User; onLogout: () => void }> = ({ user, onLogout
         <div className="absolute -top-48 -left-48 w-[600px] h-[600px] bg-[#2D6A4F]/3 rounded-full blur-[120px]"></div>
       </div>
 
-      <aside className="hidden lg:flex w-72 bg-white/80 backdrop-blur-xl border-r border-gray-100 flex-col p-8 fixed h-screen z-50 shadow-sm">
+      <aside className={`hidden lg:flex w-72 bg-white/80 backdrop-blur-xl border-r border-gray-100 flex-col p-8 fixed h-screen z-50 shadow-sm transition-all duration-700 ${isOverlayActive ? 'opacity-40 pointer-events-none' : ''}`}>
         <Link to="/dashboard" className="flex items-center gap-3 mb-12 px-2 group">
           <motion.div whileHover={{ scale: 1.05 }} className="bg-white p-2 rounded-xl shadow-sm border border-gray-100">
-            <KoalaIcon className="w-8 h-8" />
+            <KoalaIcon className="w-8 h-8 md:w-10 md:h-10" />
           </motion.div>
           <span className="text-xl font-black text-[#1B4332] tracking-tighter uppercase">Koala</span>
         </Link>
@@ -213,7 +265,7 @@ const Layout: React.FC<{ user: User; onLogout: () => void }> = ({ user, onLogout
         </div>
       </aside>
 
-      <header className="lg:hidden bg-white/90 backdrop-blur-xl border-b border-gray-100 p-4 sticky top-0 z-[60] flex justify-between items-center h-16 shadow-sm">
+      <header className={`lg:hidden bg-white/90 backdrop-blur-xl border-b border-gray-100 p-4 sticky top-0 z-[60] flex justify-between items-center h-16 shadow-sm transition-all duration-700 ${isOverlayActive ? 'opacity-40 pointer-events-none' : ''}`}>
         <Link to="/dashboard" className="flex items-center gap-2.5">
           <KoalaIcon className="w-8 h-8" />
           <span className="text-lg font-black text-[#1B4332] tracking-tight uppercase">Koala</span>
@@ -223,21 +275,11 @@ const Layout: React.FC<{ user: User; onLogout: () => void }> = ({ user, onLogout
 
       <main className="flex-1 lg:ml-72 p-4 md:p-10 lg:p-16 xl:p-20 pb-28 lg:pb-16 max-w-full overflow-x-hidden relative">
         <div className="max-w-[1400px] mx-auto w-full">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={location.pathname}
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -5 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Outlet />
-            </motion.div>
-          </AnimatePresence>
+          <Outlet />
         </div>
       </main>
 
-      <nav className="lg:hidden bg-white/95 backdrop-blur-2xl border-t border-gray-100 fixed bottom-0 left-0 right-0 z-[70] flex justify-around p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
+      <nav className={`lg:hidden bg-white/95 backdrop-blur-2xl border-t border-gray-100 fixed bottom-0 left-0 right-0 z-[70] flex justify-around p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0_-10px_30px_rgba(0,0,0,0.05)] transition-all duration-700 ${isOverlayActive ? 'opacity-40 pointer-events-none' : ''}`}>
         <MobileNavItem to="/dashboard" icon="🏠" isActive={location.pathname === '/dashboard'} />
         <MobileNavItem to="/new" icon="✍️" isActive={location.pathname === '/new'} />
         <MobileNavItem to="/history" icon="📜" isActive={location.pathname === '/history'} />
