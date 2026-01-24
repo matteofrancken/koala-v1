@@ -1,8 +1,7 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { ToneType, LengthType } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
 
 export async function generateDailyQuote() {
   const model = "gemini-3-flash-preview";
@@ -12,7 +11,7 @@ export async function generateDailyQuote() {
     Genereer één korte, krachtige quote die ondernemers motiveert om slimmer te werken en tijd te besparen.
     Focus op: tijdswinst, efficiëntie, passie voor ondernemen en het loslaten van administratieve lasten.
     Taal: Nederlands (met een professionele maar warme toon).
-    Lengte: Maximaal 15-20 woorden.
+    Lengte: Maximaal 15-20 words.
     Geen hashtags, geen emoji's in de tekst zelf.
   `;
 
@@ -26,7 +25,7 @@ export async function generateDailyQuote() {
       }
     });
 
-    return response.text.trim().replace(/^["']|["']$/g, '');
+    return (response.text || "").trim().replace(/^["']|["']$/g, '') || "Tijd is je meest kostbare bezit.";
   } catch (error) {
     console.error("Quote Error:", error);
     return "Tijd is het enige kapitaal dat je niet kunt bijdrukken. Besteed het wijs.";

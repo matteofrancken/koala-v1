@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, PlanType } from '../types';
@@ -23,7 +22,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ user, onUpdateUser }) => {
     if (!businessName.trim()) return;
     setGeneratingVibe(true);
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
       const prompt = `A clean, minimalist 3D corporate illustration of a modern office. On the office wall or glass, display ONLY the exact text "${businessName}". DO NOT invent or add any extra words, taglines, or industry descriptions. Include a subtle, friendly koala sitting at a desk. Style: professional, high-end, soft lighting, green and white color palette. 16:9 aspect ratio.`;
       
       const response = await ai.models.generateContent({
@@ -32,10 +31,13 @@ const Onboarding: React.FC<OnboardingProps> = ({ user, onUpdateUser }) => {
         config: { imageConfig: { aspectRatio: "16:9" } }
       });
 
-      for (const part of response.candidates[0].content.parts) {
-        if (part.inlineData) {
-          setBusinessVibeUrl(`data:image/png;base64,${part.inlineData.data}`);
-          break;
+      const parts = response.candidates?.[0]?.content?.parts;
+      if (parts) {
+        for (const part of parts) {
+          if (part.inlineData) {
+            setBusinessVibeUrl(`data:image/png;base64,${part.inlineData.data}`);
+            break;
+          }
         }
       }
     } catch (err) {

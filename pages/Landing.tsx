@@ -32,7 +32,7 @@ const Landing: React.FC<LandingProps> = ({ user }) => {
     if (!vibeInput.trim()) return;
     setGeneratingVibe(true);
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
       const prompt = `A minimalist, professional high-quality 3D illustration of a cute, friendly koala sitting in a modern minimalist office. On the wall or a sign, display ONLY the exact text "${vibeInput}". DO NOT add any other words, slogans, or descriptive phrases like "Financial Solutions" or "Services". The style must be clean, Belgian corporate aesthetic, soft lighting, green and white color palette. 16:9 aspect ratio.`;
       
       const response = await ai.models.generateContent({
@@ -41,10 +41,13 @@ const Landing: React.FC<LandingProps> = ({ user }) => {
         config: { imageConfig: { aspectRatio: "16:9" } }
       });
 
-      for (const part of response.candidates[0].content.parts) {
-        if (part.inlineData) {
-          setVibeImage(`data:image/png;base64,${part.inlineData.data}`);
-          break;
+      const parts = response.candidates?.[0]?.content?.parts;
+      if (parts) {
+        for (const part of parts) {
+          if (part.inlineData) {
+            setVibeImage(`data:image/png;base64,${part.inlineData.data}`);
+            break;
+          }
         }
       }
     } catch (err) {

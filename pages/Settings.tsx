@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, Link, Outlet, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -77,7 +76,7 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdate, onLogout }) => {
     setRegeneratingVibe(true);
     setMessage('');
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
       const prompt = `A professional high-end 3D minimalist illustration of a cute, friendly koala sitting in a modern high-end minimalist corporate office. The image MUST contain NO text. Clean Belgian aesthetic, soft lighting, green and white color palette. 16:9 aspect ratio.`;
       
       const response = await ai.models.generateContent({
@@ -86,12 +85,15 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdate, onLogout }) => {
         config: { imageConfig: { aspectRatio: "16:9" } }
       });
 
-      for (const part of response.candidates[0].content.parts) {
-        if (part.inlineData) {
-          const newUrl = `data:image/png;base64,${part.inlineData.data}`;
-          setTempVibeUrl(newUrl);
-          setHasNewGeneration(true);
-          break;
+      const parts = response.candidates?.[0]?.content?.parts;
+      if (parts) {
+        for (const part of parts) {
+          if (part.inlineData) {
+            const newUrl = `data:image/png;base64,${part.inlineData.data}`;
+            setTempVibeUrl(newUrl);
+            setHasNewGeneration(true);
+            break;
+          }
         }
       }
     } catch (err) {
