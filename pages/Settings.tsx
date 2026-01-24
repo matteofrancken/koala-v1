@@ -219,7 +219,7 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdate, onLogout }) => {
         {/* --- SUPPORT --- */}
         <button 
           onClick={() => setShowSupportModal(true)} 
-          className="w-full bg-white p-12 md:p-14 rounded-[3rem] md:rounded-[4rem] shadow-sm border border-gray-50 flex items-center justify-between group hover:shadow-2xl transition-all duration-500"
+          className="w-full bg-white p-12 md:p-14 rounded-[3rem] md:rounded-[4rem] shadow-sm border border-gray-50 flex items-center group hover:shadow-2xl transition-all duration-500"
         >
           <div className="flex items-center gap-8">
             <div className="w-16 h-16 md:w-20 md:h-20 bg-gray-50 rounded-3xl flex items-center justify-center text-3xl group-hover:bg-green-50 transition-colors shadow-inner">✉️</div>
@@ -228,7 +228,6 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdate, onLogout }) => {
               <p className="text-[10px] md:text-[12px] font-black text-gray-300 uppercase tracking-widest">We helpen je graag verder</p>
             </div>
           </div>
-          <span className="text-gray-300 group-hover:translate-x-3 transition-transform text-3xl font-black">→</span>
         </button>
 
         {/* --- LEGAL & EXIT --- */}
@@ -321,9 +320,8 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdate, onLogout }) => {
 };
 
 const LegalLink = ({ to, label }: { to: string; label: string }) => (
-  <Link to={to} className="w-full flex items-center justify-between px-10 py-6 bg-gray-50/50 rounded-2xl md:rounded-3xl border border-gray-100 hover:bg-white transition-all group shadow-sm hover:shadow-md">
+  <Link to={to} className="w-full flex items-center px-10 py-6 bg-gray-50/50 rounded-2xl md:rounded-3xl border border-gray-100 hover:bg-white transition-all group shadow-sm hover:shadow-md">
     <span className="text-[11px] font-black uppercase tracking-[0.25em] text-gray-500 group-hover:text-[#1B4332] transition-colors">{label}</span>
-    <span className="text-gray-300 group-hover:translate-x-3 transition-transform text-2xl font-black">→</span>
   </Link>
 );
 

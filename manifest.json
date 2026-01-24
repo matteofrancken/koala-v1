@@ -4,12 +4,12 @@
   "name": "Koala AI - Klantencommunicatie",
   "icons": [
     {
-      "src": "koala-logo.png",
+      "src": "logo.png",
       "type": "image/png",
       "sizes": "128x128"
     },
     {
-      "src": "koala-logo.png",
+      "src": "logo.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any maskable"
