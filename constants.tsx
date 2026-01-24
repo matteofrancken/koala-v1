@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 // Fix: Removed duplicate 'accent' property on line 10 to resolve object literal name collision.
@@ -12,7 +11,7 @@ export const COLORS = {
 };
 
 // Gebruik het geüploade logo bestand met relatief pad
-export const LOGO_URL = './logo.png';
+export const LOGO_URL = './koala-logo.png';
 
 export const PLANS = [
   {

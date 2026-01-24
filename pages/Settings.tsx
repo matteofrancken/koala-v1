@@ -191,7 +191,7 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdate, onLogout }) => {
               </div>
               <div className="space-y-4">
                 <label className="block text-[10px] font-black uppercase text-gray-400 tracking-[0.3em] px-2">Bedrijfsnaam</label>
-                <input type="text" value={businessName} onChange={(e) => setBusinessName(e.target.value)} className="w-full px-8 py-6 rounded-2xl bg-gray-50 border-2 border-transparent focus:border-[#2D6A4F] focus:bg-white outline-none font-bold text-gray-800 transition-all text-lg shadow-inner" required />
+                <input type="text" value={businessName} onChange={(e) => setBusinessName(e.target.value)} className="w-full px-8 py-6 rounded-2xl bg-white border-2 border-transparent focus:border-[#2D6A4F] focus:bg-white outline-none font-bold text-gray-800 transition-all text-lg shadow-inner" required />
               </div>
             </div>
             <div className="pt-4">
