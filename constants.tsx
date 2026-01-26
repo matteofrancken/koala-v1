@@ -10,8 +10,8 @@ export const COLORS = {
   cta: '#1B4332'
 };
 
-// Gebruik het geüploade logo bestand met relatief pad
-export const LOGO_URL = './koala-logo.png';
+// Gebruik het nieuwe logo bestand in de public map (root pad)
+export const LOGO_URL = '/logo.png';
 
 export const PLANS = [
   {
