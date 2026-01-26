@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { HashRouter, Routes, Route, Navigate, Link, useLocation, Outlet, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -18,6 +19,7 @@ import AiTransparency from './pages/AiTransparency';
 import { KoalaIcon } from './constants';
 import { backendService } from './services/backend';
 import { supabase } from './services/supabase';
+import Chatbot from './components/Chatbot';
 
 // Safe storage helper om Safari Private Mode crashes te voorkomen
 const safeStorage = {
@@ -152,6 +154,7 @@ const App: React.FC = () => {
         loadAppData={loadAppData}
         setState={setState}
       />
+      <Chatbot />
     </HashRouter>
   );
 };

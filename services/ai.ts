@@ -1,7 +1,50 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { ToneType, LengthType } from "../types";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+
+export async function askKoko(question: string, history: { role: 'user' | 'model', text: string }[] = []) {
+  const model = "gemini-3-flash-preview";
+
+  const systemInstruction = `
+    Je bent Koko de Koala, de vrolijke en deskundige AI-assistent van de 'Koala AI' app.
+    Koala AI is een platform voor Belgische en Nederlandse ondernemers om hun klantencommunicatie te automatiseren.
+    
+    JOUW ROL:
+    - Help gebruikers met vragen over de app.
+    - Geef tips over hoe ze betere mails kunnen schrijven.
+    - Leg uit wat de verschillende plannen (Gratis, Starter, Pro, Unlimited) inhouden.
+    - Wees altijd vriendelijk, professioneel en een tikkeltje speels (je bent immers een koala).
+    
+    RICHTLIJNEN:
+    - Houd je antwoorden kort en bondig (max 3-4 zinnen).
+    - Gebruik af en toe een emoji (🐨, ✨, ✍️).
+    - Taal: Nederlands (Vlaamse context is een plus).
+    - Als je het antwoord niet weet, verwijs dan naar info@koala-ai.be.
+  `;
+
+  try {
+    const contents = [
+      ...history.map(h => ({ role: h.role, parts: [{ text: h.text }] })),
+      { role: 'user', parts: [{ text: question }] }
+    ];
+
+    const response = await ai.models.generateContent({
+      model,
+      contents,
+      config: {
+        systemInstruction,
+        temperature: 0.7,
+      }
+    });
+
+    return (response.text || "").trim();
+  } catch (error) {
+    console.error("Koko Error:", error);
+    return "Oei, mijn koala-brein heeft even een kortsluiting! 🐨 Kun je het nog eens proberen of stuur een mailtje naar onze support?";
+  }
+}
 
 export async function generateDailyQuote() {
   const model = "gemini-3-flash-preview";

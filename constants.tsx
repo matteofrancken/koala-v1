@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 // Fix: Removed duplicate 'accent' property on line 10 to resolve object literal name collision.
@@ -12,6 +13,8 @@ export const COLORS = {
 
 // Gebruik het nieuwe logo bestand in de public map (root pad)
 export const LOGO_URL = '/logo.png';
+// Specifiek logo voor Koko de Koala assistent
+export const KOKO_LOGO_URL = '/koalasupport.png';
 
 export const PLANS = [
   {
