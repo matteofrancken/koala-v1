@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { PlanType, User } from '../types';
 import { PLANS } from '../constants';
@@ -41,9 +40,13 @@ const Pricing: React.FC<PricingProps> = ({ user, onUpgrade }) => {
     setError(null);
     
     try {
+      // Stel een vlag in de sessie in om te voorkomen dat App.tsx ons uitlogt bij terugkeer
+      sessionStorage.setItem('koala_payment_in_progress', 'true');
       const session = await stripeService.createCheckoutSession(plan.priceId, user.email);
       await stripeService.redirectToCheckout(session);
     } catch (err: any) {
+      // Verwijder de vlag als het mislukt
+      sessionStorage.removeItem('koala_payment_in_progress');
       console.error("Payment flow error:", err);
       setError(err.message || "Fout bij opzetten betaling.");
       setLoadingPlan(null);

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { HashRouter, Routes, Route, Navigate, Link, useLocation, Outlet, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -19,6 +18,28 @@ import AiTransparency from './pages/AiTransparency';
 import { KoalaIcon } from './constants';
 import { backendService } from './services/backend';
 import { supabase } from './services/supabase';
+
+// Safe storage helper om Safari Private Mode crashes te voorkomen
+const safeStorage = {
+  getItem: (key: string, type: 'local' | 'session' = 'local') => {
+    try {
+      return type === 'local' ? localStorage.getItem(key) : sessionStorage.getItem(key);
+    } catch (e) { return null; }
+  },
+  setItem: (key: string, value: string, type: 'local' | 'session' = 'local') => {
+    try {
+      type === 'local' ? localStorage.setItem(key, value) : sessionStorage.setItem(key, value);
+    } catch (e) { /* Storage blocked */ }
+  },
+  removeItem: (key: string, type: 'local' | 'session' = 'local') => {
+    try {
+      type === 'local' ? localStorage.removeItem(key) : sessionStorage.removeItem(key);
+    } catch (e) { /* Storage blocked */ }
+  },
+  clear: () => {
+    try { localStorage.clear(); } catch (e) { /* Storage blocked */ }
+  }
+};
 
 // Helper component to force scroll to top on every navigation
 const ScrollToTop = () => {
@@ -56,17 +77,27 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
-    // FORCE LOGOUT ON EVERY REFRESH / INITIAL LOAD
+    // Check of we terugkomen van een betaling (zoals browser back button van Stripe)
+    const isReturningFromPayment = safeStorage.getItem('koala_payment_in_progress', 'session') === 'true';
+
+    // FORCE LOGOUT ON EVERY REFRESH / INITIAL LOAD (Except when returning from payment)
     const forceInitialLogout = async () => {
       // Clear all local session data immediately
-      localStorage.clear();
+      safeStorage.clear();
       // Inform Supabase to sign out (invalidates token)
       await supabase.auth.signOut();
       // Ensure the state is clean and show the landing page
       setState({ user: null, history: [], loading: false });
     };
 
-    forceInitialLogout();
+    if (isReturningFromPayment) {
+      // Gebruik de "one-time" pass: verwijder de vlag en laad de sessie
+      safeStorage.removeItem('koala_payment_in_progress', 'session');
+      loadAppData();
+    } else {
+      // Standaard gedrag: uitloggen op elke refresh
+      forceInitialLogout();
+    }
 
     // Setup listener for future login events during this same session
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
@@ -82,7 +113,7 @@ const App: React.FC = () => {
   }, []);
 
   const handleLogin = async (user: User) => {
-    localStorage.setItem('koala_session_email', user.email);
+    safeStorage.setItem('koala_session_email', user.email);
     await backendService.saveUser(user);
     const history = await backendService.getHistory(user.id);
     setState({ user, history, loading: false });
@@ -95,7 +126,7 @@ const App: React.FC = () => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    localStorage.clear();
+    safeStorage.clear();
     setState({ user: null, history: [], loading: false });
     window.location.hash = '#/';
   };
