@@ -20,8 +20,28 @@ export const backendService = {
         .maybeSingle();
 
       if (!error && data) {
-        // Special override for matteo.francken@hotmail.com as requested
-        const isSpecialUser = cleanEmail === 'matteo.francken@hotmail.com';
+        // Plan Overrides for specific accounts
+        const isUnlimitedUser = cleanEmail === 'matteo.francken@hotmail.com';
+        const isProUser = cleanEmail === 'matteo.francken2@hotmail.com';
+        const isStarterUser = cleanEmail === 'matteo.francken2@outlook.com';
+
+        let plan = data.plan;
+        let maxResponses = Number(data.max_responses || 10);
+        let status = data.subscription_status;
+
+        if (isUnlimitedUser) {
+          plan = 'Unlimited';
+          maxResponses = 999999;
+          status = 'active';
+        } else if (isProUser) {
+          plan = 'Pro';
+          maxResponses = 500;
+          status = 'active';
+        } else if (isStarterUser) {
+          plan = 'Starter';
+          maxResponses = 100;
+          status = 'active';
+        }
 
         return {
           id: data.id,
@@ -30,13 +50,13 @@ export const backendService = {
           businessName: data.business_name || '',
           businessVibeUrl: data.business_vibe_url || '',
           onboardingCompleted: Boolean(data.onboarding_completed),
-          plan: isSpecialUser ? 'Unlimited' : data.plan,
+          plan: plan,
           responsesUsed: Number(data.responses_used || 0),
-          maxResponses: isSpecialUser ? 999999 : Number(data.max_responses || 10),
+          maxResponses: maxResponses,
           timeSaved: Number(data.time_saved || 0),
           lastResetMonth: data.last_reset_month,
           stripeCustomerId: data.stripe_customer_id,
-          subscriptionStatus: isSpecialUser ? 'active' : data.subscription_status,
+          subscriptionStatus: status,
           createdAt: data.created_at
         } as User;
       }
@@ -84,6 +104,7 @@ export const backendService = {
           id: item.id,
           userId: item.user_id,
           originalMessage: item.original_message,
+          // Fix: Corrected property name from aiResponse_a to aiResponseA to match GeneratedResponse interface on line 107
           aiResponseA: item.ai_response_a,
           aiResponseB: item.ai_response_b,
           tone: item.tone,

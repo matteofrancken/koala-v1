@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="nl">
 <head>
@@ -12,60 +13,27 @@
     <link rel="apple-touch-icon" href="/logo.png">
     <link rel="icon" type="image/png" href="/logo.png">
     
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="/manifest.json">
     
     <title>Koala AI - Slimmer Communiceren</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <style>
-        :root {
-          --safe-area-inset-bottom: env(safe-area-inset-bottom);
-          --safe-area-inset-top: env(safe-area-inset-top);
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              koala: {
+                green: '#2D6A4F',
+                dark: '#1B4332',
+                yellow: '#FFC300',
+                light: '#F8F9FA'
+              }
+            }
+          }
         }
-        body { 
-          font-family: 'Inter', sans-serif; 
-          background-color: #F8F9FA; 
-          color: #1C1C1C; 
-          -webkit-tap-highlight-color: transparent;
-          scroll-behavior: smooth;
-          overscroll-behavior-y: none;
-        }
-        
-        #root {
-          padding-top: var(--safe-area-inset-top);
-          min-height: 100vh;
-          display: flex;
-          flex-direction: column;
-        }
-
-        .gradient-bg { background: linear-gradient(135deg, #2D6A4F 0%, #1B4332 100%); }
-        .pb-safe { padding-bottom: var(--safe-area-inset-bottom); }
-        
-        ::-webkit-scrollbar {
-          width: 5px;
-          height: 5px;
-        }
-        ::-webkit-scrollbar-thumb {
-          background: #2D6A4F;
-          border-radius: 10px;
-        }
-
-        input, textarea, select {
-          font-size: 16px !important;
-        }
-
-        .logo-shadow {
-          filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
-        }
-
-        .no-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .no-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-    </style>
+      }
+    </script>
 <script type="importmap">
 {
   "imports": {
@@ -85,7 +53,6 @@
 </head>
 <body>
     <div id="root"></div>
-    <!-- Vite zal deze import gebruiken om alle dependencies te bundelen voor optimale snelheid op mobiel -->
     <script type="module" src="/index.tsx"></script>
 </body>
 </html>
