@@ -1,7 +1,5 @@
-
 import React from 'react';
 
-// Fix: Removed duplicate 'accent' property on line 10 to resolve object literal name collision.
 export const COLORS = {
   primary: '#2D6A4F',
   secondary: '#40916C',
@@ -11,9 +9,7 @@ export const COLORS = {
   cta: '#1B4332'
 };
 
-// Gebruik het nieuwe logo bestand in de public map (root pad)
 export const LOGO_URL = '/logo.png';
-// Specifiek logo voor Koko de Koala assistent
 export const KOKO_LOGO_URL = '/koalasupport.png';
 
 export const PLANS = [
@@ -31,7 +27,7 @@ export const PLANS = [
   },
   {
     name: 'Starter',
-    price: '€29',
+    price: '€19',
     limit: 100,
     features: [
       '100 antwoorden per maand',
@@ -39,12 +35,12 @@ export const PLANS = [
       '3 communicatiestijlen',
       'Historiek tot 30 dagen'
     ],
-    priceId: 'price_1So515E2L8ivtB2lln742fTU',
+    priceId: 'price_1SvHBvE2L8ivtB2lZqMOmPwg',
     isRecommended: false
   },
   {
     name: 'Pro',
-    price: '€59',
+    price: '€39',
     limit: 500,
     features: [
       '500 antwoorden per maand',
@@ -52,12 +48,12 @@ export const PLANS = [
       'Alle communicatiestijlen',
       'Onbeperkte historiek'
     ],
-    priceId: 'price_1SqKXVE2L8ivtB2lrds5oFq0',
+    priceId: 'price_1SvHCRE2L8ivtB2lBmBrdwi9',
     isRecommended: true
   },
   {
     name: 'Unlimited',
-    price: '€79',
+    price: '€59',
     limit: 999999,
     features: [
       'Onbeperkte antwoorden',
@@ -65,7 +61,7 @@ export const PLANS = [
       'Alle communicatiestijlen + Custom',
       'Onbeperkte historiek'
     ],
-    priceId: 'price_1SqKXtE2L8ivtB2log3VUYaP'
+    priceId: 'price_1SvHDXE2L8ivtB2lImoBdgrY'
   }
 ];
 
@@ -80,7 +76,6 @@ export const KoalaIcon: React.FC<KoalaIconProps> = ({ className = "w-12 h-12", n
     className={`${className} object-contain transition-transform duration-300 ${noShadow ? '' : 'logo-shadow'}`} 
     alt="Koala AI Logo" 
     onError={(e) => {
-      // Fallback als logo.png nog niet geüpload is of niet gevonden wordt
       (e.target as HTMLImageElement).src = "https://cdn-icons-png.flaticon.com/512/3069/3069172.png";
     }}
   />

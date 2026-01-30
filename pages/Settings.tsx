@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate, Link, Outlet, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -22,9 +23,7 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdate, onLogout }) => {
   const [email, setEmail] = useState(user.email);
   const [businessName, setBusinessName] = useState(user.businessName);
   const [message, setMessage] = useState('');
-  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
   
   const [regeneratingVibe, setRegeneratingVibe] = useState(false);
@@ -37,9 +36,8 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdate, onLogout }) => {
                           location.pathname.includes('/eula') || 
                           location.pathname.includes('/ai-transparency');
   
-  // Alleen dimmen voor kritieke systeem-overlays (verwijderen/support)
-  // De juridische documenten (isJuridicalOpen) worden NIET meer toegevoegd aan de blur-logica
-  const isOverlayActive = isConfirmingDelete || showSupportModal;
+  // Alleen dimmen voor kritieke systeem-overlays (support)
+  const isOverlayActive = showSupportModal;
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,7 +74,8 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdate, onLogout }) => {
     setRegeneratingVibe(true);
     setMessage('');
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+      // Fix: Direct use of process.env.API_KEY and initialization before usage.
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const prompt = `A professional high-end 3D minimalist illustration of a cute, friendly koala sitting in a modern high-end minimalist corporate office. The image MUST contain NO text. Clean Belgian aesthetic, soft lighting, green and white color palette. 16:9 aspect ratio.`;
       
       const response = await ai.models.generateContent({
@@ -112,20 +111,8 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdate, onLogout }) => {
     setTimeout(() => setMessage(''), 5000);
   };
 
-  const handleDeleteAccount = async () => {
-    setIsDeleting(true);
-    try {
-      await backendService.deleteAccount(user.id, user.email);
-      onLogout?.();
-    } catch (error) {
-      alert("Er is een fout opgetreden.");
-      setIsDeleting(false);
-    }
-  };
-
   return (
     <div className="max-w-6xl mx-auto pb-32 px-4 space-y-8 md:space-y-12 relative">
-      {/* Container die alleen dimt/blurrt bij kritieke popups, niet bij documenten */}
       <div className={`space-y-8 md:space-y-12 transition-all duration-700 ease-in-out ${isOverlayActive ? 'opacity-70 pointer-events-none' : ''}`}>
         
         {/* --- HEADER --- */}
@@ -248,39 +235,12 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdate, onLogout }) => {
           
           <div className="flex flex-col sm:flex-row gap-8 pt-8 items-center justify-center">
             <button onClick={() => onLogout?.()} className="w-full sm:w-auto px-16 py-6 bg-gray-100 text-gray-400 rounded-3xl font-black uppercase tracking-widest text-[11px] hover:bg-gray-200 hover:text-gray-600 transition-all active:scale-95 shadow-sm">Uitloggen</button>
-            <button onClick={() => setIsConfirmingDelete(true)} className="text-red-300 hover:text-red-500 text-[10px] font-black uppercase tracking-[0.4em] transition-colors py-4 px-10">Account Verwijderen</button>
           </div>
         </div>
       </div>
 
       {/* --- OVERLAYS --- */}
       <AnimatePresence>
-        {isConfirmingDelete && (
-          <div className="fixed inset-0 z-[1200] flex items-center justify-center p-6 bg-[#1B4332]/40 overflow-hidden">
-            <motion.div 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
-              exit={{ opacity: 0 }}
-              className="absolute inset-0" 
-              onClick={() => setIsConfirmingDelete(false)}
-            ></motion.div>
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 30 }} 
-              animate={{ opacity: 1, scale: 1, y: 0 }} 
-              exit={{ opacity: 0, scale: 0.95, y: 30 }} 
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="w-full max-w-lg bg-white p-14 rounded-[4rem] shadow-2xl text-center relative z-10 border border-white"
-            >
-              <div className="w-24 h-24 bg-red-50 text-red-600 rounded-full flex items-center justify-center text-5xl mx-auto mb-10 shadow-inner">⚠️</div>
-              <h2 className="text-3xl font-black mb-4 text-[#1B4332] uppercase tracking-tighter">Zeker weten?</h2>
-              <p className="text-gray-400 mb-12 font-bold text-sm leading-relaxed uppercase tracking-tight px-4">Dit verwijdert al je data, historiek en instellingen definitief uit onze systemen. Er is geen weg terug.</p>
-              <div className="space-y-6">
-                <button onClick={handleDeleteAccount} className="w-full bg-red-600 text-white py-6 rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-xl hover:bg-red-700 transition-all active:scale-95">{isDeleting ? 'Bezig...' : 'Ja, verwijder alles'}</button>
-                <button onClick={() => setIsConfirmingDelete(false)} className="w-full text-gray-300 font-black uppercase tracking-widest text-[10px] py-4 hover:text-[#1B4332] transition-colors">Ik wil blijven</button>
-              </div>
-            </motion.div>
-          </div>
-        )}
         {showSupportModal && (
           <div className="fixed inset-0 z-[1200] flex items-center justify-center p-6 bg-[#1B4332]/40 overflow-hidden">
             <motion.div 
@@ -309,7 +269,7 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdate, onLogout }) => {
         )}
       </AnimatePresence>
       
-      {/* Juridische documenten overlays: Geen blur/pointer-events-none meer op de achtergrond content */}
+      {/* Juridische documenten overlays */}
       <AnimatePresence>
         {isJuridicalOpen && (
           <div className="fixed inset-0 z-[1300] bg-black/10 overflow-hidden flex items-center justify-center pointer-events-auto">

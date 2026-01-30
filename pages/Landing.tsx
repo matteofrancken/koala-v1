@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -32,7 +33,8 @@ const Landing: React.FC<LandingProps> = ({ user }) => {
     if (!vibeInput.trim()) return;
     setGeneratingVibe(true);
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+      // Fix: Direct use of process.env.API_KEY and initialization before usage.
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const prompt = `A minimalist, professional high-quality 3D illustration of a cute, friendly koala sitting in a modern minimalist office. On the wall or a sign, display ONLY the exact text "${vibeInput}". DO NOT add any other words, slogans, or descriptive phrases like "Financial Solutions" or "Services". The style must be clean, Belgian corporate aesthetic, soft lighting, green and white color palette. 16:9 aspect ratio.`;
       
       const response = await ai.models.generateContent({
@@ -93,7 +95,7 @@ const Landing: React.FC<LandingProps> = ({ user }) => {
           </Link>
           <div className="flex items-center gap-4 md:gap-8">
             {user ? (
-              <Link to="/dashboard" className="bg-[#1B4332] text-white px-6 md:px-8 py-3 md:py-4 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest shadow-xl">Dashboard</Link>
+              <Link to="/dashboard" className="bg-[#1B4332] text-white px-6 md:px-8 py-3 md:py-4 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest text-center shadow-xl">Dashboard</Link>
             ) : (
               <>
                 <Link to="/login" className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-[#1B4332] transition-colors">Login</Link>

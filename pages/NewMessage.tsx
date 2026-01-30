@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, ToneType, LengthType, GeneratedResponse, PlanType } from '../types';
@@ -11,6 +10,19 @@ interface NewMessageProps {
   onComplete: (item: GeneratedResponse) => Promise<void>;
   onRecordUsage: (length: LengthType) => void;
 }
+
+// Veilige UUID generator conform database vereisten
+const generateId = () => {
+  try {
+    return crypto.randomUUID();
+  } catch (e) {
+    // Fallback voor omgevingen zonder crypto.randomUUID
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
+};
 
 const NewMessage: React.FC<NewMessageProps> = ({ user, onComplete, onRecordUsage }) => {
   const navigate = useNavigate();
@@ -27,9 +39,8 @@ const NewMessage: React.FC<NewMessageProps> = ({ user, onComplete, onRecordUsage
   const [result, setResult] = useState<any>(null);
 
   useEffect(() => {
-    // Stel standaard de eerste toegestane toon in op basis van plan
     if (user) {
-      const plan = user.plan.toString();
+      const plan = user.plan ? user.plan.toString() : '';
       if (plan === 'Gratis' || plan === PlanType.FREE) {
         setTone(ToneType.FORMAL);
       } else if (plan === 'Starter' || plan === PlanType.STARTER) {
@@ -42,7 +53,7 @@ const NewMessage: React.FC<NewMessageProps> = ({ user, onComplete, onRecordUsage
 
   const isToneAllowed = (targetTone: ToneType): boolean => {
     if (!user) return false;
-    const plan = user.plan.toString();
+    const plan = user.plan ? user.plan.toString() : '';
     
     if (plan === 'Unlimited' || plan === PlanType.UNLIMITED) return true;
     
@@ -54,7 +65,6 @@ const NewMessage: React.FC<NewMessageProps> = ({ user, onComplete, onRecordUsage
       return [ToneType.FORMAL, ToneType.BUSINESS, ToneType.INFORMAL].includes(targetTone);
     }
     
-    // Gratis plan
     return targetTone === ToneType.FORMAL;
   };
 
@@ -90,12 +100,15 @@ const NewMessage: React.FC<NewMessageProps> = ({ user, onComplete, onRecordUsage
       
       const textData = await generateKoalaResponse(message, activeTone, length, user.fullName, user.businessName, combinedDetails);
 
+      if (!textData) throw new Error("Geen data ontvangen van Koala.");
+      
       setResult({ ...textData, visualUrl: '' });
       onRecordUsage(length);
       setDirection('forward');
       setStep(5);
     } catch (err: any) {
-      setError("Genereren mislukt. Probeer het opnieuw.");
+      console.error("Generate error:", err);
+      setError("Koala kon het bericht niet genereren. Controleer je internetverbinding.");
     } finally {
       setLoading(false);
     }
@@ -115,7 +128,7 @@ const NewMessage: React.FC<NewMessageProps> = ({ user, onComplete, onRecordUsage
     setError(null);
     try {
       const newEntry: GeneratedResponse = {
-        id: crypto.randomUUID(),
+        id: generateId(), 
         userId: user.id,
         originalMessage: message,
         aiResponseA: result.variantA,
@@ -131,10 +144,9 @@ const NewMessage: React.FC<NewMessageProps> = ({ user, onComplete, onRecordUsage
       
       await onComplete(newEntry);
       navigate('/dashboard');
-    } catch (err) {
+    } catch (err: any) {
       console.error("Save error:", err);
-      setError("Kon bericht niet opslaan in historiek.");
-      alert("Kon niet opslaan. Controleer je internetverbinding.");
+      setError(`Kon bericht niet opslaan: ${err.message || 'Onbekende fout'}`);
     } finally {
       setSaving(false);
     }
@@ -148,7 +160,7 @@ const NewMessage: React.FC<NewMessageProps> = ({ user, onComplete, onRecordUsage
   });
 
   return (
-    <div className="max-w-6xl mx-auto space-y-12 pb-32">
+    <div className="max-w-6xl mx-auto space-y-12 pb-32 px-4">
       <header className="px-1">
         <h1 className="text-3xl md:text-5xl font-black text-[#1B4332] tracking-tighter">Nieuw Bericht</h1>
       </header>
@@ -161,7 +173,7 @@ const NewMessage: React.FC<NewMessageProps> = ({ user, onComplete, onRecordUsage
 
       <nav className="flex justify-between bg-white p-6 rounded-[2rem] border border-gray-50 shadow-sm">
         {[1,2,3,4,5].map(s => (
-          <div key={s} className={`w-10 h-10 rounded-xl flex items-center justify-center font-black ${step >= s ? 'bg-[#2D6A4F] text-white' : 'bg-gray-50 text-gray-300'}`}>{s}</div>
+          <div key={s} className={`w-10 h-10 rounded-xl flex items-center justify-center font-black transition-colors ${step >= s ? 'bg-[#2D6A4F] text-white' : 'bg-gray-50 text-gray-300'}`}>{s}</div>
         ))}
       </nav>
 
@@ -205,7 +217,7 @@ const NewMessage: React.FC<NewMessageProps> = ({ user, onComplete, onRecordUsage
                   <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest px-2">Beschrijf jouw eigen stijl</label>
                   <input 
                     type="text" 
-                    placeholder="Bijv. Zeer sarcastisch, extreem enthousiast, of juridisch formeel..." 
+                    placeholder="Bijv. Zeer sarcastisch, extreem enthousiast..." 
                     className={`w-full p-6 rounded-2xl bg-white border-2 font-bold focus:border-[#2D6A4F] outline-none transition-all ${
                       tone === ToneType.CUSTOM && !customToneDescription.trim() ? 'border-orange-200' : 'border-gray-100'
                     }`}
@@ -218,7 +230,7 @@ const NewMessage: React.FC<NewMessageProps> = ({ user, onComplete, onRecordUsage
               <button 
                 onClick={() => {
                   if (tone === ToneType.CUSTOM && !customToneDescription.trim()) {
-                    alert("Vul a.u.b. een beschrijving in voor je eigen stijl.");
+                    alert("Vul a.u.b. een beschrijving in.");
                     return;
                   }
                   tone && goToStep(3);

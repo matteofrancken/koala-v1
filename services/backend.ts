@@ -104,7 +104,6 @@ export const backendService = {
           id: item.id,
           userId: item.user_id,
           originalMessage: item.original_message,
-          // Fix: Corrected property name from aiResponse_a to aiResponseA to match GeneratedResponse interface on line 107
           aiResponseA: item.ai_response_a,
           aiResponseB: item.ai_response_b,
           tone: item.tone,
@@ -156,12 +155,6 @@ export const backendService = {
       console.error("addToHistory fatal error", e);
       throw e;
     }
-  },
-
-  async deleteAccount(userId: string, email: string): Promise<void> {
-    await supabase.from('history').delete().eq('user_id', userId);
-    await supabase.from('users').delete().eq('id', userId);
-    await supabase.auth.signOut();
   },
 
   async deleteFromHistory(id: string): Promise<void> {
